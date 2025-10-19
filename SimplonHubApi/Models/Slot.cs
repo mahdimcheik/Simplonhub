@@ -10,5 +10,6 @@ namespace MainBoilerPlate.Models
         public UserApp Teacher { get; set; }
         public Guid TypeId { get; set; }
         public TypeSlot Type { get; set; }
+        public Booking? Booking { get; set; }
     }
 }

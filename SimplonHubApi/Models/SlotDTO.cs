@@ -1,3 +1,4 @@
+using SimplonHubApi.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace MainBoilerPlate.Models
@@ -65,14 +66,15 @@ namespace MainBoilerPlate.Models
         /// <example>2023-01-20T14:45:00Z</example>
         public DateTimeOffset? UpdatedAt { get; set; }
 
+        public BookingDetailsDTO booking { get; set; }
+
         /// <summary>
         /// Indique si le créneau est disponible (non réservé)
         /// </summary>
-        public bool IsAvailable { get; set; }
 
         public SlotResponseDTO() { }
 
-        public SlotResponseDTO(Slot slot, bool isAvailable = true)
+        public SlotResponseDTO(Slot slot)
         {
             Id = slot.Id;
             DateFrom = slot.DateFrom;
@@ -81,7 +83,7 @@ namespace MainBoilerPlate.Models
             TypeId = slot.TypeId;
             CreatedAt = slot.CreatedAt;
             UpdatedAt = slot.UpdatedAt;
-            IsAvailable = isAvailable;
+            booking = slot.Booking is not null ?  new BookingDetailsDTO(slot.Booking) : null;
 
             if (slot.Teacher != null)
             {
