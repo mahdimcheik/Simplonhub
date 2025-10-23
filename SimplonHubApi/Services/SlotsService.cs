@@ -314,7 +314,7 @@ namespace MainBoilerPlate.Services
             try
             {
                 var slot = await context.Slots.FirstOrDefaultAsync(s =>
-                    s.Id == id && s.ArchivedAt == null && s.Id == slotDto.TypeId
+                    s.Id == id && s.ArchivedAt == null
                 );
 
                 if (slot == null)

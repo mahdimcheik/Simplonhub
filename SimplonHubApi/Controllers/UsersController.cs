@@ -14,5 +14,12 @@ namespace MainBoilerPlate.Controllers
             var users = await usersService.GetUsers(tableState);
             return Ok(users);
         }
+
+        [HttpPost("list-teachers")]
+        public async Task<ActionResult<ResponseDTO<List<UserResponseDTO>>>> GetAllTeachers([FromBody] DynamicFilters<UserApp> tableState)
+        {
+            var users = await usersService.GetTeachers(tableState);
+            return Ok(users);
+        }
     }
 }

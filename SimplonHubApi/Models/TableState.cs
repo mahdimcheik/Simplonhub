@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 
 namespace MainBoilerPlate.Models
 {
@@ -153,25 +154,67 @@ namespace MainBoilerPlate.Models
                 // 🔹 Détecter si c'est une propriété imbriquée (contient "/")
                 var propertyPath = key.Split('/');
                 
-                // Obtenir le membre (propriété simple ou imbriquée)
-                var (member, propertyType) = GetNestedPropertyExpression(parameter, propertyPath, entityType);
-                
-                if (member == null || propertyType == null)
-                {
-                    Console.WriteLine($"Property path '{key}' not found on type {entityType.Name}");
-                    continue;
-                }
-
                 Expression? expression = null;
 
-                // Gestion spéciale pour le matchMode "any"
-                if (filter.MatchMode.ToLower() == "in")
+                // Check if we're dealing with a collection property
+                if (propertyPath.Length > 1)
                 {
-                    expression = BuildAnyExpression(filter, member, propertyType, key);
+                    var firstProperty = entityType.GetProperty(
+                        propertyPath[0],
+                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                    );
+
+                    if (firstProperty != null && IsCollectionType(firstProperty.PropertyType))
+                    {
+                        // Handle collection property filtering
+                        expression = BuildCollectionFilterExpression(
+                            parameter, 
+                            propertyPath, 
+                            filter, 
+                            entityType,
+                            key
+                        );
+                    }
+                    else
+                    {
+                        // Handle regular nested property
+                        var (member, propertyType) = GetNestedPropertyExpression(parameter, propertyPath, entityType);
+                        
+                        if (member == null || propertyType == null)
+                        {
+                            Console.WriteLine($"Property path '{key}' not found on type {entityType.Name}");
+                            continue;
+                        }
+
+                        if (filter.MatchMode.ToLower() == "in")
+                        {
+                            expression = BuildAnyExpression(filter, member, propertyType, key);
+                        }
+                        else
+                        {
+                            expression = BuildComparisonExpression(filter, member, propertyType, key);
+                        }
+                    }
                 }
                 else
                 {
-                    expression = BuildComparisonExpression(filter, member, propertyType, key);
+                    // Simple property (no nesting)
+                    var (member, propertyType) = GetNestedPropertyExpression(parameter, propertyPath, entityType);
+                    
+                    if (member == null || propertyType == null)
+                    {
+                        Console.WriteLine($"Property path '{key}' not found on type {entityType.Name}");
+                        continue;
+                    }
+
+                    if (filter.MatchMode.ToLower() == "in")
+                    {
+                        expression = BuildAnyExpression(filter, member, propertyType, key);
+                    }
+                    else
+                    {
+                        expression = BuildComparisonExpression(filter, member, propertyType, key);
+                    }
                 }
 
                 if (expression == null)
@@ -189,6 +232,147 @@ namespace MainBoilerPlate.Models
             var lambda = Expression.Lambda<Func<T, bool>>(finalExpression, parameter);
 
             return query.Where(lambda);
+        }
+
+        /// <summary>
+        /// Check if a type is a collection type (IEnumerable, ICollection, List, etc.)
+        /// </summary>
+        private static bool IsCollectionType(Type type)
+        {
+            if (type == typeof(string))
+                return false;
+
+            return typeof(IEnumerable).IsAssignableFrom(type);
+        }
+
+        /// <summary>
+        /// Build filter expression for collection properties
+        /// Example: Languages/Id => x.Languages.Any(l => filterValues.Contains(l.Id))
+        /// </summary>
+        private static Expression? BuildCollectionFilterExpression(
+            Expression parameter,
+            string[] propertyPath,
+            FilterItem filter,
+            Type entityType,
+            string key)
+        {
+            try
+            {
+                // Get the collection property (e.g., "Languages")
+                var collectionProperty = entityType.GetProperty(
+                    propertyPath[0],
+                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                );
+
+                if (collectionProperty == null)
+                {
+                    Console.WriteLine($"Collection property '{propertyPath[0]}' not found");
+                    return null;
+                }
+
+                // Get the element type of the collection
+                var collectionType = collectionProperty.PropertyType;
+                Type elementType;
+
+                if (collectionType.IsGenericType)
+                {
+                    elementType = collectionType.GetGenericArguments()[0];
+                }
+                else
+                {
+                    Console.WriteLine($"Cannot determine element type for collection '{propertyPath[0]}'");
+                    return null;
+                }
+
+                // Get the nested property on the element (e.g., "Id" on Language)
+                var nestedPropertyName = propertyPath[1];
+                var nestedProperty = elementType.GetProperty(
+                    nestedPropertyName,
+                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                );
+
+                if (nestedProperty == null)
+                {
+                    Console.WriteLine($"Nested property '{nestedPropertyName}' not found on type {elementType.Name}");
+                    return null;
+                }
+
+                // Build the Any() expression
+                // x.Languages.Any(l => filterValues.Contains(l.Id))
+                
+                var collectionAccess = Expression.Property(parameter, collectionProperty);
+                var lambdaParameter = Expression.Parameter(elementType, "item");
+                var nestedPropertyAccess = Expression.Property(lambdaParameter, nestedProperty);
+
+                Expression? predicate = null;
+
+                if (filter.MatchMode.ToLower() == "in")
+                {
+                    // Parse the filter values
+                    Guid[] values;
+
+                    if (filter.Value is JsonElement jsonElement)
+                    {
+                        values = jsonElement.Deserialize<Guid[]>() ?? Array.Empty<Guid>();
+                    }
+                    else if (filter.Value is string strValue)
+                    {
+                        values = JsonSerializer.Deserialize<Guid[]>(strValue) ?? Array.Empty<Guid>();
+                    }
+                    else
+                    {
+                        values = (Guid[])filter.Value;
+                    }
+
+                    if (values.Length > 0)
+                    {
+                        // Convert values to the property type
+                        var convertedValues = values
+                            .Select(v => Convert.ChangeType(v, nestedProperty.PropertyType))
+                            .ToList();
+
+                        // Create typed array
+                        var typedArray = Array.CreateInstance(nestedProperty.PropertyType, convertedValues.Count);
+                        for (int i = 0; i < convertedValues.Count; i++)
+                        {
+                            typedArray.SetValue(convertedValues[i], i);
+                        }
+
+                        // Build: filterValues.Contains(item.Id)
+                        var containsMethod = typeof(Enumerable)
+                            .GetMethods()
+                            .First(m => m.Name == "Contains" && m.GetParameters().Length == 2)
+                            .MakeGenericMethod(nestedProperty.PropertyType);
+
+                        var arrayConstant = Expression.Constant(typedArray);
+                        predicate = Expression.Call(null, containsMethod, arrayConstant, nestedPropertyAccess);
+                    }
+                }
+                else
+                {
+                    // For other match modes on collections (equals, contains, etc.)
+                    predicate = BuildComparisonExpression(filter, nestedPropertyAccess, nestedProperty.PropertyType, key);
+                }
+
+                if (predicate == null)
+                    return null;
+
+                // Create lambda: item => predicate
+                var predicateLambda = Expression.Lambda(predicate, lambdaParameter);
+
+                // Build: collection.Any(predicate)
+                var anyMethod = typeof(Enumerable)
+                    .GetMethods()
+                    .First(m => m.Name == "Any" && m.GetParameters().Length == 2)
+                    .MakeGenericMethod(elementType);
+
+                return Expression.Call(null, anyMethod, collectionAccess, predicateLambda);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error building collection filter for '{key}': {ex.Message}");
+                return null;
+            }
         }
 
         /// <summary>
