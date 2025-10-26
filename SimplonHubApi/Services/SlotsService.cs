@@ -15,19 +15,21 @@ namespace MainBoilerPlate.Services
         /// Récupère tous les créneaux
         /// </summary>
         /// <returns>Liste des créneaux</returns>
-        public async Task<ResponseDTO<List<SlotResponseDTO>>> GetAllSlotsAsync(DynamicFilters<Slot> tableState)
+        public async Task<ResponseDTO<List<SlotResponseDTO>>> GetAllSlotsAsync(
+            DynamicFilters<Slot> tableState
+        )
         {
             try
             {
-                var query = 
-                    //await 
+                var query =
+                    //await
                     context
-                    .Slots.AsNoTracking()
-                    .Where(s => s.ArchivedAt == null)
-                    .Include(s => s.Teacher)
-                    .Include(s => s.Booking)
-                    .Include(s => s.Type)
-                    .OrderBy(s => s.DateFrom);
+                        .Slots.AsNoTracking()
+                        .Where(s => s.ArchivedAt == null)
+                        .Include(s => s.Teacher)
+                        .Include(s => s.Booking)
+                        .Include(s => s.Type)
+                        .OrderBy(s => s.DateFrom);
                 //.ToListAsync();
 
                 // Vérifier la disponibilité de chaque créneau
@@ -86,8 +88,6 @@ namespace MainBoilerPlate.Services
                     };
                 }
 
-
-
                 return new ResponseDTO<SlotResponseDTO>
                 {
                     Status = 200,
@@ -126,7 +126,69 @@ namespace MainBoilerPlate.Services
                     .Select(x => new SlotResponseDTO(x))
                     .ToListAsync();
 
+                return new ResponseDTO<List<SlotResponseDTO>>
+                {
+                    Status = 200,
+                    Message = "Créneaux de l'enseignant récupérés avec succès",
+                    Data = slots,
+                    Count = slots.Count,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<List<SlotResponseDTO>>
+                {
+                    Status = 500,
+                    Message =
+                        $"Erreur lors de la récupération des créneaux de l'enseignant: {ex.Message}",
+                    Data = null,
+                };
+            }
+        }
 
+        public async Task<ResponseDTO<List<SlotResponseDTO>>> GetSlotsByStudentIdAsync(
+            Guid studentId,
+            DateTimeOffset start,
+            DateTimeOffset end,
+            Guid? teacherId
+        )
+        {
+            try
+            {
+                var slots = await context
+                    .Slots.AsNoTracking()
+                    .Include(s => s.Booking)
+                    .Where(s =>
+                        s.ArchivedAt == null
+                        && s.Booking.StudentId == studentId
+                        && s.DateFrom >= start
+                        && s.DateTo <= end
+                    )
+                    .Include(s => s.Teacher)
+                    .Include(s => s.Type)
+                    .OrderBy(s => s.DateFrom)
+                    .Select(x => new SlotResponseDTO(x))
+                    .ToListAsync();
+
+                if (teacherId is not null)
+                {
+                    var teacherSlots = await context
+                        .Slots.AsNoTracking()
+                        .Where(s => s.TeacherId == teacherId)
+                        .Include(s => s.Booking)
+                        .Where(s =>
+                            s.ArchivedAt == null
+                            && s.Booking == null
+                            && s.DateFrom >= start
+                            && s.DateTo <= end
+                        )
+                        .Include(s => s.Teacher)
+                        .Include(s => s.Type)
+                        .OrderBy(s => s.DateFrom)
+                        .Select(x => new SlotResponseDTO(x))
+                        .ToListAsync();
+                    slots.AddRange(teacherSlots);
+                }
 
                 return new ResponseDTO<List<SlotResponseDTO>>
                 {
@@ -164,7 +226,6 @@ namespace MainBoilerPlate.Services
                     .OrderBy(s => s.DateFrom)
                     .Select(x => new SlotResponseDTO(x))
                     .ToListAsync();
-
 
                 return new ResponseDTO<List<SlotResponseDTO>>
                 {
