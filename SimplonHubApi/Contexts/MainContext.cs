@@ -458,7 +458,7 @@ namespace MainBoilerPlate.Contexts
                             .HasForeignKey("CursusId")
                             .OnDelete(DeleteBehavior.Restrict)
                 );
-            
+
 
             // Seed Roles
             List<RoleApp> roles = new()
@@ -468,6 +468,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_SUPER_ADMIN,
                     Name = "SuperAdmin",
                     NormalizedName = "SUPERADMIN",
+                    DisplayName = "Super Administrateur",
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -475,6 +476,8 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_ADMIN,
                     Name = "Admin",
                     NormalizedName = "ADMIN",
+                    DisplayName = "Administrateur",
+
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -482,6 +485,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_TEACHER,
                     Name = "Teacher",
                     NormalizedName = "TEACHER",
+                    DisplayName = "Professeur",
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -489,6 +493,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_STUDENT,
                     Name = "Student",
                     NormalizedName = "STUDENT",
+                    DisplayName = "Elève",
                     CreatedAt = DateTime.UtcNow,
                 },
             };
