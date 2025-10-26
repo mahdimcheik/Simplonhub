@@ -83,12 +83,12 @@ namespace MainBoilerPlate.Services
                 .Users.Include(x => x.Languages)
                 .Include(x => x.UserRoles)
                 .Where(x => x.UserRoles.Any(ur => ur.RoleId == HardCode.ROLE_TEACHER))
-                .Include(x => x.Status)
                 .Include(x => x.Gender)
-                .Include(x => x.Experiences)
-                .Include(x => x.Formations)
+                //.Include(x => x.Status)
+                //.Include(x => x.Experiences)
+                //.Include(x => x.Formations)
                 .Include(x => x.TeacherCursuses)
-                .Include(x => x.Languages)
+                .Include(x => x.ProgrammingLanguages)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(tableState.Search))
