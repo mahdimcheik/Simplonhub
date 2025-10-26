@@ -15,35 +15,39 @@ namespace MainBoilerPlate.Services
         /// Récupère tous les créneaux
         /// </summary>
         /// <returns>Liste des créneaux</returns>
-        public async Task<ResponseDTO<List<SlotResponseDTO>>> GetAllSlotsAsync()
+        public async Task<ResponseDTO<List<SlotResponseDTO>>> GetAllSlotsAsync(DynamicFilters<Slot> tableState)
         {
             try
             {
-                var slots = await context
+                var query = 
+                    //await 
+                    context
                     .Slots.AsNoTracking()
                     .Where(s => s.ArchivedAt == null)
                     .Include(s => s.Teacher)
+                    .Include(s => s.Booking)
                     .Include(s => s.Type)
-                    .OrderBy(s => s.DateFrom)
-                    .ToListAsync();
+                    .OrderBy(s => s.DateFrom);
+                //.ToListAsync();
 
                 // Vérifier la disponibilité de chaque créneau
-                var slotResponses = new List<SlotResponseDTO>();
-                foreach (var slot in slots)
-                {
-                    var isBooked = await context.Bookings.AnyAsync(b =>
-                        b.SlotId == slot.Id && b.ArchivedAt == null
-                    );
+                //var slotResponses = new List<SlotResponseDTO>();
+                //foreach (var slot in slots)
+                //{
+                //    var isBooked = await context.Bookings.AnyAsync(b =>
+                //        b.SlotId == slot.Id && b.ArchivedAt == null
+                //    );
+                //    slotResponses.Add(new SlotResponseDTO(slot, !isBooked));
+                //}
 
-                    slotResponses.Add(new SlotResponseDTO(slot, !isBooked));
-                }
+                var slots = await query.ApplyAndCountAsync(tableState);
 
                 return new ResponseDTO<List<SlotResponseDTO>>
                 {
                     Status = 200,
                     Message = "Créneaux récupérés avec succès",
-                    Data = slotResponses,
-                    Count = slotResponses.Count,
+                    Data = slots.Values.Select(s => new SlotResponseDTO(s)).ToList(),
+                    Count = slots.Count,
                 };
             }
             catch (Exception ex)
@@ -82,16 +86,13 @@ namespace MainBoilerPlate.Services
                     };
                 }
 
-                // Vérifier la disponibilité du créneau
-                var isBooked = await context.Bookings.AnyAsync(b =>
-                    b.SlotId == slot.Id && b.ArchivedAt == null
-                );
+
 
                 return new ResponseDTO<SlotResponseDTO>
                 {
                     Status = 200,
                     Message = "Créneau récupéré avec succès",
-                    Data = new SlotResponseDTO(slot, !isBooked),
+                    Data = new SlotResponseDTO(slot),
                 };
             }
             catch (Exception ex)
@@ -122,25 +123,17 @@ namespace MainBoilerPlate.Services
                     .Include(s => s.Teacher)
                     .Include(s => s.Type)
                     .OrderBy(s => s.DateFrom)
+                    .Select(x => new SlotResponseDTO(x))
                     .ToListAsync();
 
-                // Vérifier la disponibilité de chaque créneau
-                var slotResponses = new List<SlotResponseDTO>();
-                foreach (var slot in slots)
-                {
-                    var isBooked = await context.Bookings.AnyAsync(b =>
-                        b.SlotId == slot.Id && b.ArchivedAt == null
-                    );
 
-                    slotResponses.Add(new SlotResponseDTO(slot, !isBooked));
-                }
 
                 return new ResponseDTO<List<SlotResponseDTO>>
                 {
                     Status = 200,
                     Message = "Créneaux de l'enseignant récupérés avec succès",
-                    Data = slotResponses,
-                    Count = slotResponses.Count,
+                    Data = slots,
+                    Count = slots.Count,
                 };
             }
             catch (Exception ex)
@@ -169,28 +162,16 @@ namespace MainBoilerPlate.Services
                     .Include(s => s.Teacher)
                     .Include(s => s.Type)
                     .OrderBy(s => s.DateFrom)
+                    .Select(x => new SlotResponseDTO(x))
                     .ToListAsync();
 
-                // Filtrer les créneaux non réservés
-                var availableSlots = new List<SlotResponseDTO>();
-                foreach (var slot in slots)
-                {
-                    var isBooked = await context.Bookings.AnyAsync(b =>
-                        b.SlotId == slot.Id && b.ArchivedAt == null
-                    );
-
-                    if (!isBooked)
-                    {
-                        availableSlots.Add(new SlotResponseDTO(slot, true));
-                    }
-                }
 
                 return new ResponseDTO<List<SlotResponseDTO>>
                 {
                     Status = 200,
                     Message = "Créneaux disponibles récupérés avec succès",
-                    Data = availableSlots,
-                    Count = availableSlots.Count,
+                    Data = slots,
+                    Count = slots.Count,
                 };
             }
             catch (Exception ex)
@@ -234,18 +215,6 @@ namespace MainBoilerPlate.Services
                         Data = null,
                     };
                 }
-
-                //// Vérifier que l'enseignant existe
-                //var teacherExists = await context.Users.AnyAsync(u => u.Id == slotDto.TeacherId);
-                //if (!teacherExists)
-                //{
-                //    return new ResponseDTO<SlotResponseDTO>
-                //    {
-                //        Status = 404,
-                //        Message = "Enseignant non trouvé",
-                //        Data = null
-                //    };
-                //}
 
                 // Vérifier que le type de créneau existe
                 var typeExists = await context.TypeSlots.AnyAsync(t =>
@@ -305,7 +274,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 201,
                     Message = "Créneau créé avec succès",
-                    Data = new SlotResponseDTO(createdSlot!, true),
+                    Data = new SlotResponseDTO(createdSlot!),
                 };
             }
             catch (Exception ex)
@@ -345,7 +314,7 @@ namespace MainBoilerPlate.Services
             try
             {
                 var slot = await context.Slots.FirstOrDefaultAsync(s =>
-                    s.Id == id && s.ArchivedAt == null && s.Id == slotDto.TypeId
+                    s.Id == id && s.ArchivedAt == null
                 );
 
                 if (slot == null)
@@ -440,7 +409,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 200,
                     Message = "Créneau mis à jour avec succès",
-                    Data = new SlotResponseDTO(updatedSlot!, true),
+                    Data = new SlotResponseDTO(updatedSlot!),
                 };
             }
             catch (Exception ex)

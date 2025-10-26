@@ -24,12 +24,12 @@ namespace MainBoilerPlate.Controllers
         /// <returns>Liste de tous les créneaux</returns>
         /// <response code="200">Créneaux récupérés avec succès</response>
         /// <response code="500">Erreur interne du serveur</response>
-        [HttpGet("all")]
+        [HttpPost("all")]
         [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllSlots()
+        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllSlots([FromBody] DynamicFilters<Slot> tableState)
         {
-            var response = await slotsService.GetAllSlotsAsync();
+            var response = await slotsService.GetAllSlotsAsync(tableState);
             
             if (response.Status == 200)
             {

@@ -428,7 +428,7 @@ namespace MainBoilerPlate.Contexts
             builder
                 .Entity<Booking>()
                 .HasOne(b => b.Slot)
-                .WithOne()
+                .WithOne(s => s.Booking)
                 .HasForeignKey<Booking>(b => b.SlotId);
 
             // Order => Student

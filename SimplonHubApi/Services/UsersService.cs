@@ -1,6 +1,7 @@
 using System.Linq;
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
+using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,54 @@ namespace MainBoilerPlate.Services
             //        g => g.Key,
             //        g => g.Select(x => x.RoleName ?? string.Empty).ToList()
             //    );
+            var roles = await context.Roles.ToListAsync();
+
+            return new ResponseDTO<List<UserResponseDTO>>
+            {
+                Status = 200,
+                Message = "Utilisateurs récupérés avec succès",
+                Data = countValues
+                    .Values.Select(x => new UserResponseDTO(
+                        x,
+                        roles
+                            .Where(r => x.UserRoles.Select(ur => ur.RoleId).Contains(r.Id))
+                            .Select(l => new RoleAppResponseDTO(l))
+                            .ToList()
+                    ))
+                    .ToList(),
+
+                Count = countValues.Count,
+            };
+        }
+
+        public async Task<ResponseDTO<List<UserResponseDTO>>> GetTeachers(
+    DynamicFilters<UserApp> tableState
+)
+        {
+            var query = context
+                .Users.Include(x => x.Languages)
+                .Include(x => x.UserRoles)
+                .Where(x => x.UserRoles.Any(ur => ur.RoleId == HardCode.ROLE_TEACHER))
+                .Include(x => x.Status)
+                .Include(x => x.Gender)
+                .Include(x => x.Experiences)
+                .Include(x => x.Formations)
+                .Include(x => x.TeacherCursuses)
+                .Include(x => x.Languages)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(tableState.Search))
+            {
+                query = query.Where(u =>
+                    string.Concat(u.FirstName.ToLower(), " ", u.LastName.ToLower())
+                        .Contains(tableState.Search.ToLower())
+                );
+            }
+
+            // Apply filters, sorting, and pagination
+            var countValues = await query.ApplyAndCountAsync(tableState);
+
+
             var roles = await context.Roles.ToListAsync();
 
             return new ResponseDTO<List<UserResponseDTO>>
