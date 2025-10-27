@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Controllers
 {
@@ -271,5 +273,36 @@ namespace MainBoilerPlate.Controllers
 
             return StatusCode(response.Status, response);
         }
+
+        #region book unbook
+        [HttpPost("book")]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+    typeof(ResponseDTO<object>),
+    StatusCodes.Status500InternalServerError
+)]
+        public async Task<ActionResult<ResponseDTO<object>>> BookSlot([FromBody] BookingCreateDTO newBooking)
+        {
+            var user = CheckUser.GetUserFromClaim(User,context);
+            if(user is null)
+            {
+                return BadRequest();
+            }
+
+            var slot = await context.Slots.Where(s => s.Id == newBooking.SlotId).Include(x => x.Booking)
+                .Where(x => x.Booking == null).FirstOrDefaultAsync();
+
+            if (slot is null)
+            {
+                return BadRequest();
+            }
+
+            var response = await slotsService.BookSlot(slot,user.Id,newBooking);
+
+            return StatusCode(response.Status, response);
+        }
+        #endregion
     }
 }

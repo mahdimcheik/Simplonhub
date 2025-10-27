@@ -15,7 +15,7 @@ namespace MainBoilerPlate.Contexts
         public DbSet<StatusAccount> Statuses { get; set; }
         public DbSet<TypeSlot> TypeSlots { get; set; }
         public DbSet<Slot> Slots { get; set; }
-        public DbSet<Order> Orders { get; set; }
+        //public DbSet<Order> Orders { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Formation> Formations { get; set; }
         public DbSet<Experience> Experiences { get; set; }
@@ -413,11 +413,11 @@ namespace MainBoilerPlate.Contexts
             builder.Entity<Slot>().HasOne(s => s.Type).WithMany().HasForeignKey(s => s.TypeId);
 
             // Booking => Order, Student, slot
-            builder
-                .Entity<Booking>()
-                .HasOne(b => b.Order)
-                .WithMany(o => o.Bookings)
-                .HasForeignKey(b => b.OrderId);
+            //builder
+            //    .Entity<Booking>()
+            //    .HasOne(b => b.Order)
+            //    .WithMany(o => o.Bookings)
+            //    .HasForeignKey(b => b.OrderId);
 
             builder
                 .Entity<Booking>()

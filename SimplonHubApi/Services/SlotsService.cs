@@ -3,6 +3,7 @@ using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Utilities;
 using Microsoft.EntityFrameworkCore;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Services
 {
@@ -106,11 +107,11 @@ namespace MainBoilerPlate.Services
             }
         }
 
-        /// <summary>
-        /// Récupère les créneaux d'un enseignant
-        /// </summary>
-        /// <param name="teacherId">Identifiant de l'enseignant</param>
-        /// <returns>Liste des créneaux de l'enseignant</returns>
+/// <summary>
+/// retourne les creneau reservé de l'élève et les libre du prof en question
+/// </summary>
+/// <param name="teacherId"></param>
+/// <returns></returns>
         public async Task<ResponseDTO<List<SlotResponseDTO>>> GetSlotsByTeacherIdAsync(
             Guid teacherId
         )
@@ -540,6 +541,35 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la suppression du créneau: {ex.Message}",
+                    Data = null,
+                };
+            }
+        }
+
+        public async Task<ResponseDTO<object>> BookSlot(Slot slot, Guid studentId, BookingCreateDTO newBooking)
+        {
+            try
+            {
+                Booking booking = new Booking(newBooking);
+                booking.StudentId = studentId;
+
+                context.Bookings.Add(booking);
+
+                await context.SaveChangesAsync();
+
+                return new ResponseDTO<object>
+                {
+                    Status = 200,
+                    Message = "Créneau reservé avec succès",
+                    Data = null,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<object>
+                {
+                    Status = 500,
+                    Message = $"Erreur lors de la réservation: {ex.Message}",
                     Data = null,
                 };
             }
