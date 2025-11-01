@@ -307,6 +307,7 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
         };
         var superAdminPassword = EnvironmentVariables.SUPER_ADMIN_PASSWORD;
         if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
@@ -336,21 +337,22 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
         };
         var adminPassword = "AdminPassword123!";
-        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        if (userManager.FindByEmailAsync(admin.Email).Result == null)
         {
-            var createPowerUser = userManager
-                .CreateAsync(admin, superAdminPassword)
+            var createAdmin = userManager
+                .CreateAsync(admin, adminPassword)
                 .Result;
-            if (createPowerUser.Succeeded)
+            if (createAdmin.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Admin").Result)
                 {
                     var role = new RoleApp { Name = "Admin" };
                     roleManager.CreateAsync(role).Wait();
                 }
-                userManager.AddToRoleAsync(superAdminEmail, "Admin").Wait();
+                userManager.AddToRoleAsync(admin, "Admin").Wait();
             }
         }
 
@@ -359,27 +361,28 @@ static void SeedUsers(IServiceProvider serviceProvider)
         var teacher = new UserApp
         {
             FirstName = "Simple",
-            LastName = "teacher",
+            LastName = "Teacher",
             UserName = "teacher@simplon.co",
             Email = "teacher@simplon.co",
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
         };
         var teacherPassword = "TeacherPassword123!";
-        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        if (userManager.FindByEmailAsync(teacher.Email).Result == null)
         {
-            var createPowerUser = userManager
+            var createTeacher = userManager
                 .CreateAsync(teacher, teacherPassword)
                 .Result;
-            if (createPowerUser.Succeeded)
+            if (createTeacher.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Teacher").Result)
                 {
                     var role = new RoleApp { Name = "Teacher" };
                     roleManager.CreateAsync(role).Wait();
                 }
-                userManager.AddToRoleAsync(superAdminEmail, "Teacher").Wait();
+                userManager.AddToRoleAsync(teacher, "Teacher").Wait();
             }
         }
 
@@ -387,27 +390,28 @@ static void SeedUsers(IServiceProvider serviceProvider)
         var student = new UserApp
         {
             FirstName = "Simple",
-            LastName = "student",
+            LastName = "Student",
             UserName = "student@simplon.co",
             Email = "student@simplon.co",
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
         };
-        var studentPassword = $"StudentPassword123!";
-        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        var studentPassword = "StudentPassword123!";
+        if (userManager.FindByEmailAsync(student.Email).Result == null)
         {
-            var createPowerUser = userManager
+            var createStudent = userManager
                 .CreateAsync(student, studentPassword)
                 .Result;
-            if (createPowerUser.Succeeded)
+            if (createStudent.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Student").Result)
                 {
                     var role = new RoleApp { Name = "Student" };
                     roleManager.CreateAsync(role).Wait();
                 }
-                userManager.AddToRoleAsync(superAdminEmail, "Student").Wait();
+                userManager.AddToRoleAsync(student, "Student").Wait();
             }
         }
 #endif

@@ -46,6 +46,7 @@ namespace MainBoilerPlate.Contexts
             builder.Entity<Slot>().ToTable("Slots");
             builder.Entity<Order>().ToTable("Orders");
             builder.Entity<Booking>().ToTable("Bookings");
+            builder.Entity<StatusBooking>().ToTable("StatusBookings");
             builder.Entity<RefreshToken>().ToTable("RefreshTokens");
             builder.Entity<Formation>().ToTable("Formations");
             builder.Entity<Experience>().ToTable("Experiences");
@@ -80,6 +81,7 @@ namespace MainBoilerPlate.Contexts
                 r.Property(r => r.Id).IsRequired().HasMaxLength(64);
                 r.Property(r => r.Name).IsRequired().HasMaxLength(64);
                 r.Property(r => r.NormalizedName).IsRequired().HasMaxLength(64);
+                r.Property(r => r.DisplayName).IsRequired().HasMaxLength(128);
                 r.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
                 r.Property(a => a.UpdatedAt).HasColumnType("timestamp with time zone");
 
@@ -137,6 +139,7 @@ namespace MainBoilerPlate.Contexts
                 g.HasKey(g => g.Id);
                 g.Property(g => g.Id).IsRequired().HasMaxLength(64);
                 g.Property(g => g.Name).IsRequired().HasMaxLength(64);
+                g.Property(g => g.DisplayName).IsRequired().HasMaxLength(64);
                 g.Property(g => g.Color).IsRequired().HasMaxLength(16);
                 g.Property(g => g.Icon).HasMaxLength(256);
                 g.Property(g => g.CreatedAt)
@@ -266,10 +269,6 @@ namespace MainBoilerPlate.Contexts
                     .HasColumnType("decimal(18,2)")
                     .HasDefaultValue(0);
                 o.Property(a => a.ReductionPercentage).HasDefaultValue(0);
-                o.Property(a => a.TotalAmount)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)")
-                    .HasDefaultValue(0);
                 o.Property(a => a.UpdatedAt).HasColumnType("timestamp with time zone");
                 o.Property(a => a.CreatedAt)
                     .IsRequired()
@@ -766,7 +765,7 @@ namespace MainBoilerPlate.Contexts
             builder.Entity<TypeSlot>().HasData(typeSlots);
 
             // seed Status Bookings
-            List<StatusBooking>  statusBookings = new()
+            List<StatusBooking> statusBookings = new()
             {
                 new StatusBooking
                 {
@@ -788,7 +787,7 @@ namespace MainBoilerPlate.Contexts
                 },
             };
 
-            builder.Entity<StatusBooking>().HasData(typeSlots);
+            builder.Entity<StatusBooking>().HasData(statusBookings);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
