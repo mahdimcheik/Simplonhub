@@ -7,6 +7,7 @@ namespace SimplonHubApi.Models
     public class StatusBooking : BaseModel
     {
         public string Name { get; set; }
+        public string DisplayName { get; set; }
         public string Color { get; set; }
         public string? Icon { get; set; }
     }
@@ -24,6 +25,12 @@ namespace SimplonHubApi.Models
         /// </summary>
         [Required]
         public string Name => status.Name;
+
+        /// <summary>
+        /// Nom du statut
+        /// </summary>
+        [Required]
+        public string DisplayName => status.DisplayName;
 
         /// <summary>
         /// Couleur associée au statut (code hexadécimal)
@@ -46,6 +53,12 @@ namespace SimplonHubApi.Models
         [Required(ErrorMessage = "Le nom est requis")]
         [StringLength(64, ErrorMessage = "Le nom ne peut pas dépasser 64 caractères")]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Nom du statut
+        /// </summary>
+        [Required]
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// Couleur associée au type de créneau (code hexadécimal)
@@ -78,6 +91,14 @@ namespace SimplonHubApi.Models
         public string Name { get; set; }
 
         /// <summary>
+        /// Nom du type de créneau
+        /// </summary>
+        /// <example>Cours individuel</example>
+        [Required(ErrorMessage = "Le nom est requis")]
+        [StringLength(64, ErrorMessage = "Le nom ne peut pas dépasser 64 caractères")]
+        public string DisplayName { get; set; }
+
+        /// <summary>
         /// Couleur associée au type de créneau (code hexadécimal)
         /// </summary>
         /// <example>#ff69b4</example>
@@ -93,12 +114,13 @@ namespace SimplonHubApi.Models
         [StringLength(256, ErrorMessage = "L'icône ne peut pas dépasser 256 caractères")]
         public string? Icon { get; set; }
 
-        public void UpdateStatusBooking(StatusBooking typeSlot)
+        public void UpdateStatusBooking(StatusBooking statusBooking)
         {
-            typeSlot.Name = Name;
-            typeSlot.Color = Color;
-            typeSlot.Icon = Icon;
-            typeSlot.UpdatedAt = DateTimeOffset.UtcNow;
+            statusBooking.Name = Name;
+            statusBooking.DisplayName = DisplayName;
+            statusBooking.Color = Color;
+            statusBooking.Icon = Icon;
+            statusBooking.UpdatedAt = DateTimeOffset.UtcNow;
         }
     }
 }

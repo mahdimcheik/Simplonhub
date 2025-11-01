@@ -771,7 +771,8 @@ namespace MainBoilerPlate.Contexts
                 new StatusBooking
                 {
                     Id = HardCode.BOOKING_PENDING,
-                    Name = "En Attente",
+                    Name = "waiting",
+                    DisplayName = "En Attente",
                     Color = "#ff69b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
@@ -779,14 +780,15 @@ namespace MainBoilerPlate.Contexts
                 new StatusBooking
                 {
                     Id = HardCode.BOOKING__CONFIRMED,
-                    Name = "Confirmée",
+                    Name = "confirmed",
+                    DisplayName = "Confirmée",
                     Color = "#fa69b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },
             };
 
-            builder.Entity<StatusBooking>().HasData(statusBookings);
+            builder.Entity<StatusBooking>().HasData(typeSlots);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)

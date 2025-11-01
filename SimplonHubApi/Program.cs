@@ -324,6 +324,93 @@ static void SeedUsers(IServiceProvider serviceProvider)
                 userManager.AddToRoleAsync(superAdminEmail, "SuperAdmin").Wait();
             }
         }
+
+#if DEBUG
+        // Seed a default admin user
+        var admin = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "Admin",
+            UserName = "admin@simplon.co",
+            Email = "admin@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+        };
+        var adminPassword = "AdminPassword123!";
+        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        {
+            var createPowerUser = userManager
+                .CreateAsync(admin, superAdminPassword)
+                .Result;
+            if (createPowerUser.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Admin").Result)
+                {
+                    var role = new RoleApp { Name = "Admin" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(superAdminEmail, "Admin").Wait();
+            }
+        }
+
+
+        // Seed a default teacher
+        var teacher = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "teacher",
+            UserName = "teacher@simplon.co",
+            Email = "teacher@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+        };
+        var teacherPassword = "TeacherPassword123!";
+        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        {
+            var createPowerUser = userManager
+                .CreateAsync(teacher, teacherPassword)
+                .Result;
+            if (createPowerUser.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Teacher").Result)
+                {
+                    var role = new RoleApp { Name = "Teacher" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(superAdminEmail, "Teacher").Wait();
+            }
+        }
+
+        // Seed a default student
+        var student = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "student",
+            UserName = "student@simplon.co",
+            Email = "student@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+        };
+        var studentPassword = $"StudentPassword123!";
+        if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
+        {
+            var createPowerUser = userManager
+                .CreateAsync(student, studentPassword)
+                .Result;
+            if (createPowerUser.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Student").Result)
+                {
+                    var role = new RoleApp { Name = "Student" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(superAdminEmail, "Student").Wait();
+            }
+        }
+#endif
     }
 }
 #endregion
