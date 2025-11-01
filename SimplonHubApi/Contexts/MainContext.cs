@@ -756,7 +756,7 @@ namespace MainBoilerPlate.Contexts
                 {
                     Id = HardCode.SLOT_TYPE_PRESENTIAL,
                     Name = "Présentiel",
-                    Color = "#fa69b4",
+                    Color = "#aa69b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },

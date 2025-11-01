@@ -28,7 +28,7 @@ namespace MainBoilerPlate.Models
         public Booking(BookingCreateDTO bookingCreate)
         {
             Title = bookingCreate.Title;
-            Description = bookingCreate.Description;
+            Description = bookingCreate.Description ?? "";
             SlotId = bookingCreate.SlotId;
             StudentId = bookingCreate.StudentId;
         }

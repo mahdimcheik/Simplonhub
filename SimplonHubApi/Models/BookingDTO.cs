@@ -1,4 +1,5 @@
 using MainBoilerPlate.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace SimplonHubApi.Models
 {
@@ -20,5 +21,20 @@ namespace SimplonHubApi.Models
         public UserResponseDTO? Student { get; set; }
         public Guid SlotId { get; set; }
         public Guid StudentId { get; set; }
+    }
+
+    public class BookingUpdateDTO
+    {
+        [Required]
+        public Guid Id { get; set; }
+        [Required]
+        public string Title { get; set; }
+        public string Description { get; set; }
+
+        public void UpdateModel(Booking booking)
+        {
+            booking.Title = Title;
+            booking.Description = Description;
+        }
     }
 }

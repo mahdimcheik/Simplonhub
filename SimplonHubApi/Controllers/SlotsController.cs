@@ -246,6 +246,62 @@ namespace MainBoilerPlate.Controllers
             return StatusCode(response.Status, response);
         }
 
+        [HttpPut("update-booking")]
+        [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<SlotResponseDTO>>> UpdateBookingDetails(
+            [FromBody] BookingUpdateDTO bookingDto
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
+            }
+
+            var response = await slotsService.UpdateBookingDetailsAsync(bookingDto, User);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPut("confirm-booking/{id:guid}")]
+        [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<bool>>> ConfirmBooking([FromRoute] Guid id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
+            }
+
+            var response = await slotsService.ConfirmBookingAsync(id, User);
+
+            return StatusCode(response.Status, response);
+        }
+
         /// <summary>
         /// Supprime un créneau (suppression logique)
         /// </summary>
@@ -280,26 +336,29 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(
-    typeof(ResponseDTO<object>),
-    StatusCodes.Status500InternalServerError
-)]
-        public async Task<ActionResult<ResponseDTO<object>>> BookSlot([FromBody] BookingCreateDTO newBooking)
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<object>>> BookSlot(
+            [FromBody] BookingCreateDTO newBooking
+        )
+        { 
+            var response = await slotsService.BookSlot( newBooking,User);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPost("unbook/{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<object>>> UnbookSlot([FromRoute] Guid id)
         {
-            var user = CheckUser.GetUserFromClaim(User,context);
-            if(user is null)
-            {
-                return BadRequest();
-            }
-
-            var slot = await context.Slots.Where(s => s.Id == newBooking.SlotId).Include(x => x.Booking)
-                .Where(x => x.Booking == null).FirstOrDefaultAsync();
-
-            if (slot is null)
-            {
-                return BadRequest();
-            }
-
-            var response = await slotsService.BookSlot(slot,user.Id,newBooking);
+            var response = await slotsService.UnBookingAsync(id, User);
 
             return StatusCode(response.Status, response);
         }

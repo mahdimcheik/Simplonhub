@@ -3,6 +3,7 @@ using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Services
@@ -495,6 +496,149 @@ namespace MainBoilerPlate.Services
         }
 
         /// <summary>
+        /// Met à jour une réservation existante
+        /// </summary>
+        /// <param name="id">Identifiant de la reservation</param>
+        /// <param name="updatedBooking">Nouvelles données de la nouvelle reservation</param>
+        /// <returns>Créneau mis à jour</returns>
+        public async Task<ResponseDTO<BookingDetailsDTO>> UpdateBookingDetailsAsync(
+            BookingUpdateDTO updatedBooking,
+            ClaimsPrincipal User
+        )
+        {
+            var user = CheckUser.GetUserFromClaim(User, context);
+            var existedBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == updatedBooking.Id && b.StudentId == user.Id);
+            if(existedBooking is null)
+            {
+                return new ResponseDTO<BookingDetailsDTO?>
+                {
+                    Status = 404,
+                    Message = "Créneau non trouvé",
+                    Data = null,
+                };
+            }
+
+            try
+            {
+                updatedBooking.UpdateModel(existedBooking);
+                await context.SaveChangesAsync();
+
+                return new ResponseDTO<BookingDetailsDTO>
+                {
+                    Status = 200,
+                    Message = "La réservation est mise à jour avec succès",
+                    Data = new BookingDetailsDTO(existedBooking),
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<BookingDetailsDTO>
+                {
+                    Status = 500,
+                    Message = $"Erreur lors de la mise à jour du créneau: {ex.Message}",
+                    Data = null,
+                };
+            }
+        }
+
+        /// <summary>
+        /// Met à jour une réservation existante
+        /// </summary>
+        /// <param name="id">Identifiant de la reservation</param>
+        /// <param name="updatedBooking">Nouvelles données de la nouvelle reservation</param>
+        /// <returns>Créneau mis à jour</returns>
+        public async Task<ResponseDTO<bool>> ConfirmBookingAsync(
+            Guid bookingId,
+            ClaimsPrincipal User
+        )
+        {
+            var user = CheckUser.GetUserFromClaim(User, context);
+            var existedBooking = await context.Bookings.Where(b => b.Id == bookingId)
+                .Include(b => b.Slot)
+                .ThenInclude(s => s.Teacher)
+                .FirstOrDefaultAsync(b => b.Slot.Teacher.Id == user.Id);
+
+            if (existedBooking is null)
+            {
+                return new ResponseDTO<bool>
+                {
+                    Status = 404,
+                    Message = "Créneau non trouvé",
+                    Data = false,
+                };
+            }
+
+            try
+            {
+                existedBooking.StatusId = HardCode.BOOKING__CONFIRMED;
+                await context.SaveChangesAsync();
+
+                return new ResponseDTO<bool>
+                {
+                    Status = 200,
+                    Message = "La réservation est mise à jour avec succès",
+                    Data = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<bool>
+                {
+                    Status = 500,
+                    Message = $"Erreur lors de la mise à jour du créneau: {ex.Message}",
+                    Data = false,
+                };
+            }
+        }
+
+        /// <summary>
+        /// Unbook
+        /// </summary>
+        public async Task<ResponseDTO<bool>> UnBookingAsync(
+            Guid bookingId,
+            ClaimsPrincipal User
+        )
+        {
+            var user = CheckUser.GetUserFromClaim(User, context);
+            var existedBooking = await context.Bookings.Where(b => b.Id == bookingId && b.StudentId == user.Id)               
+                .FirstOrDefaultAsync();
+
+            if (existedBooking is null)
+            {
+                return new ResponseDTO<bool>
+                {
+                    Status = 404,
+                    Message = "Réservation non trouvée",
+                    Data = false,
+                };
+            }
+
+            try
+            {
+                context.Bookings.Remove(existedBooking);
+
+                await context.SaveChangesAsync();
+
+                return new ResponseDTO<bool>
+                {
+                    Status = 200,
+                    Message = "La réservation a été supprimée avec succès",
+                    Data = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<bool>
+                {
+                    Status = 500,
+                    Message = $"Erreur lors de la suppression de la réservation: {ex.Message}",
+                    Data = false,
+                };
+            }
+        }
+
+
+        /// <summary>
         /// Archive un créneau (suppression logique)
         /// </summary>
         /// <param name="id">Identifiant du créneau</param>
@@ -556,15 +700,33 @@ namespace MainBoilerPlate.Services
         }
 
         public async Task<ResponseDTO<object>> BookSlot(
-            Slot slot,
-            Guid studentId,
-            BookingCreateDTO newBooking
+
+            BookingCreateDTO newBooking,ClaimsPrincipal User
         )
         {
             try
             {
+                var student = CheckUser.GetUserFromClaim(User,context);
+
+                var slot = await context
+               .Slots.Where(s => s.Id == newBooking.SlotId)
+               .Include(x => x.Booking)
+               .Where(x => x.Booking == null)
+               .FirstOrDefaultAsync();
+
+                if (slot is null)
+                {
+                    return new ResponseDTO<object>
+                    {
+                        Status = 404,
+                        Message = "Créneau pas trouvé",
+                        Data = null,
+                    };
+                }
+
                 Booking booking = new Booking(newBooking);
-                booking.StudentId = studentId;
+
+                booking.StudentId = student.Id;
 
                 context.Bookings.Add(booking);
 
