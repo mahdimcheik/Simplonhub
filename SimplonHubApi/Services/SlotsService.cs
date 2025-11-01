@@ -29,6 +29,7 @@ namespace MainBoilerPlate.Services
                         .Where(s => s.ArchivedAt == null)
                         .Include(s => s.Teacher)
                         .Include(s => s.Booking)
+                        .ThenInclude(b => b.Student)
                         .Include(s => s.Type)
                         .OrderBy(s => s.DateFrom);
                 //.ToListAsync();
@@ -77,6 +78,10 @@ namespace MainBoilerPlate.Services
                     .Slots.AsNoTracking()
                     .Include(s => s.Teacher)
                     .Include(s => s.Type)
+                    .Include(s => s.Booking)
+                    .ThenInclude(b => b.Student)
+                    .Include(s => s.Booking)
+                    .ThenInclude(b => b.Status)
                     .FirstOrDefaultAsync(s => s.Id == id && s.ArchivedAt == null);
 
                 if (slot == null)
@@ -107,11 +112,11 @@ namespace MainBoilerPlate.Services
             }
         }
 
-/// <summary>
-/// retourne les creneau reservé de l'élève et les libre du prof en question
-/// </summary>
-/// <param name="teacherId"></param>
-/// <returns></returns>
+        /// <summary>
+        /// retourne les creneau reservé de l'élève et les libre du prof en question
+        /// </summary>
+        /// <param name="teacherId"></param>
+        /// <returns></returns>
         public async Task<ResponseDTO<List<SlotResponseDTO>>> GetSlotsByTeacherIdAsync(
             Guid teacherId
         )
@@ -159,12 +164,15 @@ namespace MainBoilerPlate.Services
                 var slots = await context
                     .Slots.AsNoTracking()
                     .Include(s => s.Booking)
+                    .ThenInclude(b => b.Student)
                     .Where(s =>
                         s.ArchivedAt == null
                         && s.Booking.StudentId == studentId
                         && s.DateFrom >= start
                         && s.DateTo <= end
                     )
+                    .Include(s => s.Booking)
+                    .ThenInclude(b => b.Status)
                     .Include(s => s.Teacher)
                     .Include(s => s.Type)
                     .OrderBy(s => s.DateFrom)
@@ -173,6 +181,7 @@ namespace MainBoilerPlate.Services
 
                 if (teacherId is not null)
                 {
+                    var startTime = DateTime.Now > start ? DateTime.Now : start;
                     var teacherSlots = await context
                         .Slots.AsNoTracking()
                         .Where(s => s.TeacherId == teacherId)
@@ -180,7 +189,7 @@ namespace MainBoilerPlate.Services
                         .Where(s =>
                             s.ArchivedAt == null
                             && s.Booking == null
-                            && s.DateFrom >= start
+                            && s.DateFrom >= startTime
                             && s.DateTo <= end
                         )
                         .Include(s => s.Teacher)
@@ -546,7 +555,11 @@ namespace MainBoilerPlate.Services
             }
         }
 
-        public async Task<ResponseDTO<object>> BookSlot(Slot slot, Guid studentId, BookingCreateDTO newBooking)
+        public async Task<ResponseDTO<object>> BookSlot(
+            Slot slot,
+            Guid studentId,
+            BookingCreateDTO newBooking
+        )
         {
             try
             {

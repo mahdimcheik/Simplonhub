@@ -7,7 +7,10 @@ namespace SimplonHubApi.Models
         public Guid Id => booking.Id;
         public string Title => booking.Title;
         public string Description => booking.Description;
-        public UserResponseDTO? Student => booking.Student is not null ? new UserResponseDTO(booking.Student, null) : null;
+        public StatusBookingDTO? Status =>
+            booking.Status is not null ? new StatusBookingDTO(booking.Status) : null;
+        public UserResponseDTO? Student =>
+            booking.Student is not null ? new UserResponseDTO(booking.Student, null) : null;
     }
 
     public class BookingCreateDTO
@@ -17,7 +20,5 @@ namespace SimplonHubApi.Models
         public UserResponseDTO? Student { get; set; }
         public Guid SlotId { get; set; }
         public Guid StudentId { get; set; }
-
-
     }
 }
