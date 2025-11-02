@@ -321,11 +321,8 @@ namespace MainBoilerPlate.Controllers
         )]
         public async Task<ActionResult<ResponseDTO<object>>> DeleteSlot([FromRoute] Guid id)
         {
-            // For now, we'll need to pass a teacher ID - this might need to be adjusted based on your business logic
-            // You might want to get this from the authenticated user or pass it as a parameter
-            var teacherId = Guid.Empty; // This needs to be properly implemented based on your authentication
 
-            var response = await slotsService.DeleteSlotAsync(id, teacherId);
+            var response = await slotsService.DeleteSlotAsync(id, User);
 
             return StatusCode(response.Status, response);
         }

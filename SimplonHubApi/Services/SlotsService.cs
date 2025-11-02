@@ -643,12 +643,13 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <param name="id">Identifiant du créneau</param>
         /// <returns>Résultat de l'opération</returns>
-        public async Task<ResponseDTO<object>> DeleteSlotAsync(Guid id, Guid teacherId)
+        public async Task<ResponseDTO<object>> DeleteSlotAsync(Guid id, ClaimsPrincipal User)
         {
             try
             {
+                var user = CheckUser.GetUserFromClaim(User,context);
                 var slot = await context.Slots.FirstOrDefaultAsync(s =>
-                    s.Id == id && s.ArchivedAt == null && s.TeacherId == teacherId
+                    s.Id == id && s.ArchivedAt == null && s.TeacherId == user.Id
                 );
 
                 if (slot == null)
