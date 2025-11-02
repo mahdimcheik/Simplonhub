@@ -54,6 +54,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<FakeDataService>();
     services.AddTransient<StatusAccountService>();
     services.AddTransient<RoleAppService>();
+    services.AddTransient<FavoritesService>();
 
     services.AddLogging(loggingBuilder =>
     {
