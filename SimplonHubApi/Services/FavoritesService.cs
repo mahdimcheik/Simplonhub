@@ -261,7 +261,8 @@ namespace MainBoilerPlate.Services
                     StudentId = student.Id,
                     TeacherId = favoriteDto.TeacherId,
                     Note = favoriteDto.Note,
-                    CreatedAt = DateTimeOffset.UtcNow
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
                 };
 
                 context.Favorites.Add(favorite);
