@@ -319,10 +319,10 @@ namespace MainBoilerPlate.Controllers
             typeof(ResponseDTO<object>),
             StatusCodes.Status500InternalServerError
         )]
-        public async Task<ActionResult<ResponseDTO<object>>> DeleteSlot([FromRoute] Guid id)
+        public async Task<ActionResult<ResponseDTO<object>>> DeleteSlot([FromRoute] Guid id, bool? forceDelete)
         {
 
-            var response = await slotsService.DeleteSlotAsync(id, User);
+            var response = await slotsService.DeleteSlotAsync(id, User, forceDelete ?? false);
 
             return StatusCode(response.Status, response);
         }

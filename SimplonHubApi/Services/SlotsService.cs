@@ -31,19 +31,10 @@ namespace MainBoilerPlate.Services
                         .Include(s => s.Teacher)
                         .Include(s => s.Booking)
                         .ThenInclude(b => b.Student)
+                        .Include(s => s.Booking)
+                        .ThenInclude(b => b.Status)
                         .Include(s => s.Type)
                         .OrderBy(s => s.DateFrom);
-                //.ToListAsync();
-
-                // Vérifier la disponibilité de chaque créneau
-                //var slotResponses = new List<SlotResponseDTO>();
-                //foreach (var slot in slots)
-                //{
-                //    var isBooked = await context.Bookings.AnyAsync(b =>
-                //        b.SlotId == slot.Id && b.ArchivedAt == null
-                //    );
-                //    slotResponses.Add(new SlotResponseDTO(slot, !isBooked));
-                //}
 
                 var slots = await query.ApplyAndCountAsync(tableState);
 
@@ -507,8 +498,10 @@ namespace MainBoilerPlate.Services
         )
         {
             var user = CheckUser.GetUserFromClaim(User, context);
-            var existedBooking = await context.Bookings.FirstOrDefaultAsync(b => b.Id == updatedBooking.Id && b.StudentId == user.Id);
-            if(existedBooking is null)
+            var existedBooking = await context.Bookings.FirstOrDefaultAsync(b =>
+                b.Id == updatedBooking.Id && b.StudentId == user.Id
+            );
+            if (existedBooking is null)
             {
                 return new ResponseDTO<BookingDetailsDTO?>
                 {
@@ -553,7 +546,8 @@ namespace MainBoilerPlate.Services
         )
         {
             var user = CheckUser.GetUserFromClaim(User, context);
-            var existedBooking = await context.Bookings.Where(b => b.Id == bookingId)
+            var existedBooking = await context
+                .Bookings.Where(b => b.Id == bookingId)
                 .Include(b => b.Slot)
                 .ThenInclude(s => s.Teacher)
                 .FirstOrDefaultAsync(b => b.Slot.Teacher.Id == user.Id);
@@ -594,13 +588,13 @@ namespace MainBoilerPlate.Services
         /// <summary>
         /// Unbook
         /// </summary>
-        public async Task<ResponseDTO<bool>> UnBookingAsync(
-            Guid bookingId,
-            ClaimsPrincipal User
-        )
+        public async Task<ResponseDTO<bool>> UnBookingAsync(Guid bookingId, ClaimsPrincipal User)
         {
             var user = CheckUser.GetUserFromClaim(User, context);
-            var existedBooking = await context.Bookings.Where(b => b.Id == bookingId && b.StudentId == user.Id)               
+            var existedBooking = await context
+                .Bookings.Where(b => b.Id == bookingId)
+                .Include(b => b.Slot)
+                .Where(b => b.Slot.TeacherId == user.Id || b.StudentId == user.Id)
                 .FirstOrDefaultAsync();
 
             if (existedBooking is null)
@@ -637,17 +631,20 @@ namespace MainBoilerPlate.Services
             }
         }
 
-
         /// <summary>
         /// Archive un créneau (suppression logique)
         /// </summary>
         /// <param name="id">Identifiant du créneau</param>
         /// <returns>Résultat de l'opération</returns>
-        public async Task<ResponseDTO<object>> DeleteSlotAsync(Guid id, ClaimsPrincipal User)
+        public async Task<ResponseDTO<object>> DeleteSlotAsync(
+            Guid id,
+            ClaimsPrincipal User,
+            bool forceDelete = false
+        )
         {
             try
             {
-                var user = CheckUser.GetUserFromClaim(User,context);
+                var user = CheckUser.GetUserFromClaim(User, context);
                 var slot = await context.Slots.FirstOrDefaultAsync(s =>
                     s.Id == id && s.ArchivedAt == null && s.TeacherId == user.Id
                 );
@@ -663,18 +660,21 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Vérifier si le créneau est réservé
-                var isBooked = await context.Bookings.AnyAsync(b =>
-                    b.SlotId == id && b.ArchivedAt == null
-                );
-
-                if (isBooked)
+                if (!forceDelete)
                 {
-                    return new ResponseDTO<object>
+                    var isBooked = await context.Bookings.AnyAsync(b =>
+                        b.SlotId == id && b.ArchivedAt == null
+                    );
+
+                    if (isBooked)
                     {
-                        Status = 400,
-                        Message = "Impossible de supprimer un créneau déjà réservé",
-                        Data = null,
-                    };
+                        return new ResponseDTO<object>
+                        {
+                            Status = 400,
+                            Message = "Impossible de supprimer un créneau déjà réservé",
+                            Data = null,
+                        };
+                    }
                 }
 
                 slot.ArchivedAt = DateTimeOffset.UtcNow;
@@ -701,19 +701,19 @@ namespace MainBoilerPlate.Services
         }
 
         public async Task<ResponseDTO<object>> BookSlot(
-
-            BookingCreateDTO newBooking,ClaimsPrincipal User
+            BookingCreateDTO newBooking,
+            ClaimsPrincipal User
         )
         {
             try
             {
-                var student = CheckUser.GetUserFromClaim(User,context);
+                var student = CheckUser.GetUserFromClaim(User, context);
 
                 var slot = await context
-               .Slots.Where(s => s.Id == newBooking.SlotId)
-               .Include(x => x.Booking)
-               .Where(x => x.Booking == null)
-               .FirstOrDefaultAsync();
+                    .Slots.Where(s => s.Id == newBooking.SlotId)
+                    .Include(x => x.Booking)
+                    .Where(x => x.Booking == null)
+                    .FirstOrDefaultAsync();
 
                 if (slot is null)
                 {
