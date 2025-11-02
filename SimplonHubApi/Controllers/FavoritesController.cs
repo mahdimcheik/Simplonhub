@@ -28,45 +28,16 @@ namespace MainBoilerPlate.Controllers
         /// <response code="401">Non authentifié</response>
         /// <response code="404">Étudiant non trouvé</response>
         /// <response code="500">Erreur interne du serveur</response>
-        [HttpGet("my-favorites")]
+        [HttpPost("my-favorites")]
         [ProducesResponseType(typeof(ResponseDTO<List<FavoriteResponseDTO>>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<List<FavoriteResponseDTO>>>> GetMyFavorites()
+        public async Task<ActionResult<ResponseDTO<List<FavoriteResponseDTO>>>> GetMyFavorites([FromBody] DynamicFilters<Favorite> tableState)
         {
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
 
-            var response = await favoritesService.GetStudentFavoritesAsync(studentId);
-            return StatusCode(response.Status, response);
-        }
 
-        /// <summary>
-        /// Récupère tous les professeurs favoris d'un étudiant spécifique (Admin/Teacher)
-        /// </summary>
-        /// <param name="studentId">Identifiant de l'étudiant</param>
-        /// <returns>Liste des professeurs favoris</returns>
-        /// <response code="200">Favoris récupérés avec succès</response>
-        /// <response code="404">Étudiant non trouvé</response>
-        /// <response code="500">Erreur interne du serveur</response>
-        [HttpGet("student/{studentId:guid}")]
-        [Authorize(Roles = "Admin,SuperAdmin,Teacher")]
-        [ProducesResponseType(typeof(ResponseDTO<List<FavoriteResponseDTO>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<List<FavoriteResponseDTO>>>> GetStudentFavorites(
-            [FromRoute] Guid studentId)
-        {
-            var response = await favoritesService.GetStudentFavoritesAsync(studentId);
+            var response = await favoritesService.GetStudentFavoritesAsync(tableState,User);
             return StatusCode(response.Status, response);
         }
 
@@ -86,18 +57,7 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseDTO<List<FavoriteResponseDTO>>>> GetMyFans()
         {
-            var teacherId = GetCurrentUserId();
-            if (teacherId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
-
-            var response = await favoritesService.GetTeacherFansAsync(teacherId);
+            var response = await favoritesService.GetTeacherFansAsync(User);
             return StatusCode(response.Status, response);
         }
 
@@ -117,7 +77,7 @@ namespace MainBoilerPlate.Controllers
         public async Task<ActionResult<ResponseDTO<List<FavoriteResponseDTO>>>> GetTeacherFans(
             [FromRoute] Guid teacherId)
         {
-            var response = await favoritesService.GetTeacherFansAsync(teacherId);
+            var response = await favoritesService.GetTeacherFansAsync(User);
             return StatusCode(response.Status, response);
         }
 
@@ -140,18 +100,7 @@ namespace MainBoilerPlate.Controllers
         public async Task<ActionResult<ResponseDTO<FavoriteResponseDTO>>> GetFavoriteById(
             [FromRoute] Guid id)
         {
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
-
-            var response = await favoritesService.GetFavoriteByIdAsync(id, studentId);
+            var response = await favoritesService.GetFavoriteByIdAsync(id, User);
             return StatusCode(response.Status, response);
         }
 
@@ -184,18 +133,7 @@ namespace MainBoilerPlate.Controllers
                 });
             }
 
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
-
-            var response = await favoritesService.AddFavoriteAsync(studentId, favoriteDto);
+            var response = await favoritesService.AddFavoriteAsync(favoriteDto,User);
             return StatusCode(response.Status, response);
         }
 
@@ -232,18 +170,7 @@ namespace MainBoilerPlate.Controllers
                 });
             }
 
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
-
-            var response = await favoritesService.UpdateFavoriteAsync(id, studentId, favoriteDto);
+            var response = await favoritesService.UpdateFavoriteAsync(id, User, favoriteDto);
             return StatusCode(response.Status, response);
         }
 
@@ -266,18 +193,7 @@ namespace MainBoilerPlate.Controllers
         public async Task<ActionResult<ResponseDTO<object>>> RemoveFavorite(
             [FromRoute] Guid id)
         {
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
-
-            var response = await favoritesService.RemoveFavoriteAsync(id, studentId);
+            var response = await favoritesService.RemoveFavoriteAsync(id, User);
             return StatusCode(response.Status, response);
         }
 
@@ -295,29 +211,12 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ResponseDTO<bool>>> IsFavorite(
             [FromRoute] Guid teacherId)
-        {
-            var studentId = GetCurrentUserId();
-            if (studentId == Guid.Empty)
-            {
-                return Unauthorized(new ResponseDTO<object>
-                {
-                    Status = 401,
-                    Message = "Utilisateur non authentifié",
-                    Data = null
-                });
-            }
+        { 
 
-            var response = await favoritesService.IsFavoriteAsync(studentId, teacherId);
+            var response = await favoritesService.IsFavoriteAsync(User, teacherId);
             return StatusCode(response.Status, response);
         }
 
-        /// <summary>
-        /// Récupère l'ID de l'utilisateur connecté depuis le token JWT
-        /// </summary>
-        private Guid GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
-        }
+
     }
 }

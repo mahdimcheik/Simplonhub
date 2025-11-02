@@ -1,3 +1,4 @@
+using MainBoilerPlate.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace SimplonHubApi.Models
@@ -29,7 +30,7 @@ namespace SimplonHubApi.Models
         /// <summary>
         /// Informations de l'étudiant
         /// </summary>
-        public FavoriteUserDTO? Student { get; set; }
+        public UserResponseDTO? Student { get; set; }
 
         /// <summary>
         /// Identifiant du professeur
@@ -40,7 +41,7 @@ namespace SimplonHubApi.Models
         /// <summary>
         /// Informations du professeur
         /// </summary>
-        public FavoriteUserDTO? Teacher { get; set; }
+        public UserResponseDTO? Teacher { get; set; }
 
         /// <summary>
         /// Date de création du favori
@@ -66,12 +67,12 @@ namespace SimplonHubApi.Models
 
             if (includeStudent && favorite.Student != null)
             {
-                Student = new FavoriteUserDTO(favorite.Student);
+                Student = new UserResponseDTO(favorite.Student, null);
             }
 
             if (includeTeacher && favorite.Teacher != null)
             {
-                Teacher = new FavoriteUserDTO(favorite.Teacher);
+                Teacher = new UserResponseDTO(favorite.Teacher, null);
             }
         }
     }

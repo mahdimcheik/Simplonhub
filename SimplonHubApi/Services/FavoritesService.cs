@@ -1,8 +1,11 @@
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
+using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
+using System.Security.Claims;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace MainBoilerPlate.Services
 {
@@ -16,11 +19,11 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <returns>Liste des professeurs favoris</returns>
-        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetStudentFavoritesAsync(Guid studentId)
+        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetStudentFavoritesAsync(DynamicFilters<Favorite> tableState,ClaimsPrincipal User)
         {
             try
             {
-                var student = await context.Users.FindAsync(studentId);
+                var student = CheckUser.GetUserFromClaim(User, context);
                 if (student == null)
                 {
                     return new ResponseDTO<List<FavoriteResponseDTO>>
@@ -31,18 +34,27 @@ namespace MainBoilerPlate.Services
                     };
                 }
 
-                var favorites = await context.Favorites
-                    .Where(f => f.StudentId == studentId && f.ArchivedAt == null)
+                IQueryable<Favorite> query = context.Favorites
+                    .Where(f => f.StudentId == student.Id && f.ArchivedAt == null)
                     .Include(f => f.Teacher)
                         .ThenInclude(t => t.Languages)
                     .Include(f => f.Teacher)
                         .ThenInclude(t => t.ProgrammingLanguages)
                     .Include(f => f.Teacher.Status)
-                    .Include(f => f.Teacher.Gender)
-                    .OrderByDescending(f => f.CreatedAt)
-                    .ToListAsync();
+                    .Include(f => f.Teacher.Gender);
 
-                var favoriteDtos = favorites.Select(f => new FavoriteResponseDTO(f, includeStudent: false, includeTeacher: true)).ToList();
+                if (!string.IsNullOrEmpty(tableState.Search))
+                {
+                    query = query.Where(u =>
+                        string.Concat(u.Teacher.FirstName.ToLower(), " ", u.Teacher.LastName.ToLower())
+                            .Contains(tableState.Search.ToLower())
+                    );
+                }
+
+                // Apply filters, sorting, and pagination
+                var countValues = await query.ApplyAndCountAsync(tableState);
+
+                var favoriteDtos = countValues.Values.Select(f => new FavoriteResponseDTO(f, includeStudent: false, includeTeacher: true)).ToList();
 
                 return new ResponseDTO<List<FavoriteResponseDTO>>
                 {
@@ -68,11 +80,11 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <param name="teacherId">Identifiant du professeur</param>
         /// <returns>Liste des étudiants fans</returns>
-        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetTeacherFansAsync(Guid teacherId)
+        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetTeacherFansAsync(ClaimsPrincipal User)
         {
             try
             {
-                var teacher = await context.Users.FindAsync(teacherId);
+                var teacher = CheckUser.GetUserFromClaim(User, context);
                 if (teacher == null)
                 {
                     return new ResponseDTO<List<FavoriteResponseDTO>>
@@ -84,7 +96,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 var fans = await context.Favorites
-                    .Where(f => f.TeacherId == teacherId && f.ArchivedAt == null)
+                    .Where(f => f.TeacherId == teacher.Id && f.ArchivedAt == null)
                     .Include(f => f.Student)
                         .ThenInclude(s => s.Status)
                     .Include(f => f.Student)
@@ -119,10 +131,12 @@ namespace MainBoilerPlate.Services
         /// <param name="favoriteId">Identifiant du favori</param>
         /// <param name="studentId">Identifiant de l'étudiant (pour vérifier les droits)</param>
         /// <returns>Favori trouvé</returns>
-        public async Task<ResponseDTO<FavoriteResponseDTO>> GetFavoriteByIdAsync(Guid favoriteId, Guid studentId)
+        public async Task<ResponseDTO<FavoriteResponseDTO>> GetFavoriteByIdAsync(Guid favoriteId, ClaimsPrincipal User)
         {
             try
             {
+                var student = CheckUser.GetUserFromClaim(User, context);
+                
                 var favorite = await context.Favorites
                     .Include(f => f.Teacher)
                     .Include(f => f.Student)
@@ -139,7 +153,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Vérifier que l'étudiant est bien le propriétaire du favori
-                if (favorite.StudentId != studentId)
+                if (favorite.StudentId != student.Id)
                 {
                     return new ResponseDTO<FavoriteResponseDTO>
                     {
@@ -173,12 +187,12 @@ namespace MainBoilerPlate.Services
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <param name="favoriteDto">Données du favori à créer</param>
         /// <returns>Favori créé</returns>
-        public async Task<ResponseDTO<FavoriteResponseDTO>> AddFavoriteAsync(Guid studentId, FavoriteCreateDTO favoriteDto)
+        public async Task<ResponseDTO<FavoriteResponseDTO>> AddFavoriteAsync(FavoriteCreateDTO favoriteDto, ClaimsPrincipal User)
         {
             try
             {
                 // Vérifier que l'étudiant existe
-                var student = await context.Users.FindAsync(studentId);
+                var student = CheckUser.GetUserFromClaim(User, context);
                 if (student == null)
                 {
                     return new ResponseDTO<FavoriteResponseDTO>
@@ -214,7 +228,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Vérifier qu'on ne s'ajoute pas soi-même en favori
-                if (studentId == favoriteDto.TeacherId)
+                if (student.Id == favoriteDto.TeacherId)
                 {
                     return new ResponseDTO<FavoriteResponseDTO>
                     {
@@ -226,7 +240,7 @@ namespace MainBoilerPlate.Services
 
                 // Vérifier que le favori n'existe pas déjà
                 var existingFavorite = await context.Favorites
-                    .FirstOrDefaultAsync(f => f.StudentId == studentId 
+                    .FirstOrDefaultAsync(f => f.StudentId == student.Id 
                         && f.TeacherId == favoriteDto.TeacherId 
                         && f.ArchivedAt == null);
 
@@ -244,7 +258,7 @@ namespace MainBoilerPlate.Services
                 var favorite = new Favorite
                 {
                     Id = Guid.NewGuid(),
-                    StudentId = studentId,
+                    StudentId = student.Id,
                     TeacherId = favoriteDto.TeacherId,
                     Note = favoriteDto.Note,
                     CreatedAt = DateTimeOffset.UtcNow
@@ -285,16 +299,17 @@ namespace MainBoilerPlate.Services
         /// <param name="favoriteDto">Nouvelles données du favori</param>
         /// <returns>Favori mis à jour</returns>
         public async Task<ResponseDTO<FavoriteResponseDTO>> UpdateFavoriteAsync(
-            Guid favoriteId, 
-            Guid studentId, 
+            Guid favoriteId,
+            ClaimsPrincipal User,
             FavoriteUpdateDTO favoriteDto)
         {
             try
             {
+                var student = CheckUser.GetUserFromClaim(User, context);
                 var favorite = await context.Favorites
                     .Include(f => f.Teacher)
                     .Include(f => f.Student)
-                    .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null);
+                    .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null && f.StudentId == student.Id );
 
                 if (favorite == null)
                 {
@@ -307,7 +322,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Vérifier que l'étudiant est bien le propriétaire du favori
-                if (favorite.StudentId != studentId)
+                if (favorite.StudentId != student.Id)
                 {
                     return new ResponseDTO<FavoriteResponseDTO>
                     {
@@ -344,10 +359,11 @@ namespace MainBoilerPlate.Services
         /// <param name="favoriteId">Identifiant du favori</param>
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <returns>Résultat de la suppression</returns>
-        public async Task<ResponseDTO<object>> RemoveFavoriteAsync(Guid favoriteId, Guid studentId)
+        public async Task<ResponseDTO<object>> RemoveFavoriteAsync(Guid favoriteId, ClaimsPrincipal User)
         {
             try
             {
+                var student = CheckUser.GetUserFromClaim(User, context);
                 var favorite = await context.Favorites
                     .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null);
 
@@ -362,7 +378,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Vérifier que l'étudiant est bien le propriétaire du favori
-                if (favorite.StudentId != studentId)
+                if (favorite.StudentId != student.Id)
                 {
                     return new ResponseDTO<object>
                     {
@@ -402,12 +418,13 @@ namespace MainBoilerPlate.Services
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <param name="teacherId">Identifiant du professeur</param>
         /// <returns>True si le professeur est en favori, false sinon</returns>
-        public async Task<ResponseDTO<bool>> IsFavoriteAsync(Guid studentId, Guid teacherId)
+        public async Task<ResponseDTO<bool>> IsFavoriteAsync(ClaimsPrincipal User, Guid teacherId)
         {
             try
             {
+                var student = CheckUser.GetUserFromClaim(User, context);
                 var isFavorite = await context.Favorites
-                    .AnyAsync(f => f.StudentId == studentId 
+                    .AnyAsync(f => f.StudentId == student.Id 
                         && f.TeacherId == teacherId 
                         && f.ArchivedAt == null);
 
