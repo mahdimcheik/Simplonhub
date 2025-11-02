@@ -9,6 +9,7 @@ namespace MainBoilerPlate.Contexts
     public class MainContext : IdentityDbContext<UserApp, RoleApp, Guid>
     {
         public DbSet<UserApp> Users { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
         public DbSet<RoleApp> Roles { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Address> Addresses { get; set; }
@@ -39,6 +40,7 @@ namespace MainBoilerPlate.Contexts
 
             // Les noms des tables dans la base de données
             builder.Entity<UserApp>().ToTable("Users");
+            builder.Entity<Favorite>().ToTable("Favorites");
             builder.Entity<RoleApp>().ToTable("Roles");
             builder.Entity<Gender>().ToTable("Genders");
             builder.Entity<Address>().ToTable("Addresses");
@@ -68,6 +70,20 @@ namespace MainBoilerPlate.Contexts
                 e.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
                 e.Property(a => a.UpdatedAt).IsRequired().HasColumnType("timestamp with time zone");
 
+                e.Property(e => e.CreatedAt)
+                    .IsRequired()
+                    .HasColumnType("timestamp with time zone")
+                    .ValueGeneratedOnAdd()
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
+            builder.Entity<Favorite>(e =>
+            {
+                e.HasKey(u => u.Id);
+                e.Property(u => u.Id).IsRequired().HasMaxLength(64);
+                e.Property(u => u.Note).HasMaxLength(256);
+                e.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
+                e.Property(a => a.UpdatedAt).IsRequired().HasColumnType("timestamp with time zone");
                 e.Property(e => e.CreatedAt)
                     .IsRequired()
                     .HasColumnType("timestamp with time zone")
@@ -413,6 +429,21 @@ namespace MainBoilerPlate.Contexts
                             .HasForeignKey("UserId")
                             .OnDelete(DeleteBehavior.Restrict)
                 );
+
+            // Favorites - Student adds Teacher to favorites
+            builder
+                .Entity<Favorite>()
+                .HasOne(f => f.Student)
+                .WithMany(u => u.FavoriteTeachers)
+                .HasForeignKey(f => f.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .Entity<Favorite>()
+                .HasOne(f => f.Teacher)
+                .WithMany(u => u.FanStudents)
+                .HasForeignKey(f => f.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // UserRole => UserApp, RoleApp
             builder.Entity<Microsoft.AspNetCore.Identity.IdentityUserRole<Guid>>(userRole =>

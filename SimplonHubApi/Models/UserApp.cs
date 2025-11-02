@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MainBoilerPlate.Models.Generics;
 using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Models
 {
@@ -46,6 +47,11 @@ namespace MainBoilerPlate.Models
 
         // roles
         public ICollection<IdentityUserRole<Guid>> UserRoles { get; set; }
+
+        // favorites
+        public ICollection<Favorite> FavoriteTeachers { get; set; }
+        public ICollection<Favorite> FanStudents { get; set; }
+
     }
 
     public class UserResponseDTO
