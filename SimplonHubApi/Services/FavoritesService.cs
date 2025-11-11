@@ -401,11 +401,11 @@ namespace MainBoilerPlate.Services
         /// <summary>
         /// Supprime un professeur des favoris (suppression logique)
         /// </summary>
-        /// <param name="favoriteId">Identifiant du favori</param>
+        /// <param name="teacherId">Identifiant du favori</param>
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <returns>Résultat de la suppression</returns>
         public async Task<ResponseDTO<object>> RemoveFavoriteAsync(
-            Guid favoriteId,
+            Guid teacherId,
             ClaimsPrincipal User
         )
         {
@@ -413,7 +413,7 @@ namespace MainBoilerPlate.Services
             {
                 var student = CheckUser.GetUserFromClaim(User, context);
                 var favorite = await context.Favorites.FirstOrDefaultAsync(f =>
-                    f.Id == favoriteId && f.ArchivedAt == null
+                    f.TeacherId == teacherId && f.ArchivedAt == null && f.StudentId == student.Id
                 );
 
                 if (favorite == null)
@@ -438,8 +438,7 @@ namespace MainBoilerPlate.Services
                 }
 
                 // Suppression logique
-                favorite.ArchivedAt = DateTimeOffset.UtcNow;
-                favorite.UpdatedAt = DateTimeOffset.UtcNow;
+                context.Favorites.Remove(favorite);
 
                 await context.SaveChangesAsync();
 

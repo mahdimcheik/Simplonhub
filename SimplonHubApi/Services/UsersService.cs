@@ -95,7 +95,7 @@ namespace MainBoilerPlate.Services
 
             if(userRoles.Contains("Student"))
             {
-                query = query.Include(x => x.FanStudents.Where(f => f.StudentId == user.Id));
+                query = query.Include(x => x.FanStudents.Where(f => f.StudentId == user.Id && f.ArchivedAt == null));
             }
 
             if (!string.IsNullOrEmpty(tableState.Search))
