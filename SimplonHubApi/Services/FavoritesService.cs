@@ -1,10 +1,10 @@
+using System.Security.Claims;
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
-using System.Security.Claims;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace MainBoilerPlate.Services
@@ -19,7 +19,10 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <returns>Liste des professeurs favoris</returns>
-        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetStudentFavoritesAsync(DynamicFilters<Favorite> tableState,ClaimsPrincipal User)
+        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetStudentFavoritesAsync(
+            DynamicFilters<Favorite> tableState,
+            ClaimsPrincipal User
+        )
         {
             try
             {
@@ -30,23 +33,29 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Étudiant non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                IQueryable<Favorite> query = context.Favorites
-                    .Where(f => f.StudentId == student.Id && f.ArchivedAt == null)
+                IQueryable<Favorite> query = context
+                    .Favorites.Where(f => f.StudentId == student.Id && f.ArchivedAt == null)
                     .Include(f => f.Teacher)
-                        .ThenInclude(t => t.Languages)
+                    .ThenInclude(t => t.Languages)
                     .Include(f => f.Teacher)
-                        .ThenInclude(t => t.ProgrammingLanguages)
-                    .Include(f => f.Teacher.Status)
-                    .Include(f => f.Teacher.Gender);
+                    .ThenInclude(t => t.ProgrammingLanguages)
+                    .Include(f => f.Teacher)
+                    .ThenInclude(t => t.Languages)
+                    .Include(f => f.Teacher)
+                    .ThenInclude(t => t.TeacherCursuses);
 
                 if (!string.IsNullOrEmpty(tableState.Search))
                 {
                     query = query.Where(u =>
-                        string.Concat(u.Teacher.FirstName.ToLower(), " ", u.Teacher.LastName.ToLower())
+                        string.Concat(
+                                u.Teacher.FirstName.ToLower(),
+                                " ",
+                                u.Teacher.LastName.ToLower()
+                            )
                             .Contains(tableState.Search.ToLower())
                     );
                 }
@@ -54,14 +63,20 @@ namespace MainBoilerPlate.Services
                 // Apply filters, sorting, and pagination
                 var countValues = await query.ApplyAndCountAsync(tableState);
 
-                var favoriteDtos = countValues.Values.Select(f => new FavoriteResponseDTO(f, includeStudent: false, includeTeacher: true)).ToList();
+                var favoriteDtos = countValues
+                    .Values.Select(f => new FavoriteResponseDTO(
+                        f,
+                        includeStudent: false,
+                        includeTeacher: true
+                    ))
+                    .ToList();
 
                 return new ResponseDTO<List<FavoriteResponseDTO>>
                 {
                     Status = 200,
                     Message = "Favoris récupérés avec succès",
                     Data = favoriteDtos,
-                    Count = favoriteDtos.Count
+                    Count = favoriteDtos.Count,
                 };
             }
             catch (Exception ex)
@@ -70,7 +85,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la récupération des favoris: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -80,7 +95,9 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <param name="teacherId">Identifiant du professeur</param>
         /// <returns>Liste des étudiants fans</returns>
-        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetTeacherFansAsync(ClaimsPrincipal User)
+        public async Task<ResponseDTO<List<FavoriteResponseDTO>>> GetTeacherFansAsync(
+            ClaimsPrincipal User
+        )
         {
             try
             {
@@ -91,27 +108,32 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Professeur non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
-                var fans = await context.Favorites
-                    .Where(f => f.TeacherId == teacher.Id && f.ArchivedAt == null)
+                var fans = await context
+                    .Favorites.Where(f => f.TeacherId == teacher.Id && f.ArchivedAt == null)
                     .Include(f => f.Student)
-                        .ThenInclude(s => s.Status)
+                    .ThenInclude(s => s.Status)
                     .Include(f => f.Student)
-                        .ThenInclude(s => s.Gender)
+                    .ThenInclude(s => s.Gender)
                     .OrderByDescending(f => f.CreatedAt)
                     .ToListAsync();
 
-                var fanDtos = fans.Select(f => new FavoriteResponseDTO(f, includeStudent: true, includeTeacher: false)).ToList();
+                var fanDtos = fans.Select(f => new FavoriteResponseDTO(
+                        f,
+                        includeStudent: true,
+                        includeTeacher: false
+                    ))
+                    .ToList();
 
                 return new ResponseDTO<List<FavoriteResponseDTO>>
                 {
                     Status = 200,
                     Message = "Étudiants fans récupérés avec succès",
                     Data = fanDtos,
-                    Count = fanDtos.Count
+                    Count = fanDtos.Count,
                 };
             }
             catch (Exception ex)
@@ -120,7 +142,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la récupération des fans: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -131,14 +153,17 @@ namespace MainBoilerPlate.Services
         /// <param name="favoriteId">Identifiant du favori</param>
         /// <param name="studentId">Identifiant de l'étudiant (pour vérifier les droits)</param>
         /// <returns>Favori trouvé</returns>
-        public async Task<ResponseDTO<FavoriteResponseDTO>> GetFavoriteByIdAsync(Guid favoriteId, ClaimsPrincipal User)
+        public async Task<ResponseDTO<FavoriteResponseDTO>> GetFavoriteByIdAsync(
+            Guid favoriteId,
+            ClaimsPrincipal User
+        )
         {
             try
             {
                 var student = CheckUser.GetUserFromClaim(User, context);
-                
-                var favorite = await context.Favorites
-                    .Include(f => f.Teacher)
+
+                var favorite = await context
+                    .Favorites.Include(f => f.Teacher)
                     .Include(f => f.Student)
                     .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null);
 
@@ -148,7 +173,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Favori non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -159,7 +184,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 403,
                         Message = "Vous n'avez pas accès à ce favori",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -167,7 +192,11 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 200,
                     Message = "Favori récupéré avec succès",
-                    Data = new FavoriteResponseDTO(favorite, includeStudent: true, includeTeacher: true)
+                    Data = new FavoriteResponseDTO(
+                        favorite,
+                        includeStudent: true,
+                        includeTeacher: true
+                    ),
                 };
             }
             catch (Exception ex)
@@ -176,7 +205,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la récupération du favori: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -187,7 +216,10 @@ namespace MainBoilerPlate.Services
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <param name="favoriteDto">Données du favori à créer</param>
         /// <returns>Favori créé</returns>
-        public async Task<ResponseDTO<FavoriteResponseDTO>> AddFavoriteAsync(FavoriteCreateDTO favoriteDto, ClaimsPrincipal User)
+        public async Task<ResponseDTO<FavoriteResponseDTO>> AddFavoriteAsync(
+            FavoriteCreateDTO favoriteDto,
+            ClaimsPrincipal User
+        )
         {
             try
             {
@@ -199,7 +231,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Étudiant non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -211,7 +243,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Professeur non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -223,7 +255,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 400,
                         Message = "L'utilisateur spécifié n'est pas un professeur",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -234,15 +266,16 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 400,
                         Message = "Vous ne pouvez pas vous ajouter vous-même en favori",
-                        Data = null
+                        Data = null,
                     };
                 }
 
                 // Vérifier que le favori n'existe pas déjà
-                var existingFavorite = await context.Favorites
-                    .FirstOrDefaultAsync(f => f.StudentId == student.Id 
-                        && f.TeacherId == favoriteDto.TeacherId 
-                        && f.ArchivedAt == null);
+                var existingFavorite = await context.Favorites.FirstOrDefaultAsync(f =>
+                    f.StudentId == student.Id
+                    && f.TeacherId == favoriteDto.TeacherId
+                    && f.ArchivedAt == null
+                );
 
                 if (existingFavorite != null)
                 {
@@ -250,7 +283,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 400,
                         Message = "Ce professeur est déjà dans vos favoris",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -262,15 +295,15 @@ namespace MainBoilerPlate.Services
                     TeacherId = favoriteDto.TeacherId,
                     Note = favoriteDto.Note,
                     CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow
+                    UpdatedAt = DateTimeOffset.UtcNow,
                 };
 
                 context.Favorites.Add(favorite);
                 await context.SaveChangesAsync();
 
                 // Recharger avec les relations
-                var createdFavorite = await context.Favorites
-                    .Include(f => f.Teacher)
+                var createdFavorite = await context
+                    .Favorites.Include(f => f.Teacher)
                     .Include(f => f.Student)
                     .FirstOrDefaultAsync(f => f.Id == favorite.Id);
 
@@ -278,7 +311,11 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 201,
                     Message = "Professeur ajouté aux favoris avec succès",
-                    Data = new FavoriteResponseDTO(createdFavorite!, includeStudent: false, includeTeacher: true)
+                    Data = new FavoriteResponseDTO(
+                        createdFavorite!,
+                        includeStudent: false,
+                        includeTeacher: true
+                    ),
                 };
             }
             catch (Exception ex)
@@ -287,7 +324,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de l'ajout du favori: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -302,15 +339,18 @@ namespace MainBoilerPlate.Services
         public async Task<ResponseDTO<FavoriteResponseDTO>> UpdateFavoriteAsync(
             Guid favoriteId,
             ClaimsPrincipal User,
-            FavoriteUpdateDTO favoriteDto)
+            FavoriteUpdateDTO favoriteDto
+        )
         {
             try
             {
                 var student = CheckUser.GetUserFromClaim(User, context);
-                var favorite = await context.Favorites
-                    .Include(f => f.Teacher)
+                var favorite = await context
+                    .Favorites.Include(f => f.Teacher)
                     .Include(f => f.Student)
-                    .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null && f.StudentId == student.Id );
+                    .FirstOrDefaultAsync(f =>
+                        f.Id == favoriteId && f.ArchivedAt == null && f.StudentId == student.Id
+                    );
 
                 if (favorite == null)
                 {
@@ -318,7 +358,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Favori non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -329,7 +369,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 403,
                         Message = "Vous n'avez pas le droit de modifier ce favori",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -340,7 +380,11 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 200,
                     Message = "Favori mis à jour avec succès",
-                    Data = new FavoriteResponseDTO(favorite, includeStudent: false, includeTeacher: true)
+                    Data = new FavoriteResponseDTO(
+                        favorite,
+                        includeStudent: false,
+                        includeTeacher: true
+                    ),
                 };
             }
             catch (Exception ex)
@@ -349,7 +393,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la mise à jour du favori: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -360,13 +404,17 @@ namespace MainBoilerPlate.Services
         /// <param name="favoriteId">Identifiant du favori</param>
         /// <param name="studentId">Identifiant de l'étudiant</param>
         /// <returns>Résultat de la suppression</returns>
-        public async Task<ResponseDTO<object>> RemoveFavoriteAsync(Guid favoriteId, ClaimsPrincipal User)
+        public async Task<ResponseDTO<object>> RemoveFavoriteAsync(
+            Guid favoriteId,
+            ClaimsPrincipal User
+        )
         {
             try
             {
                 var student = CheckUser.GetUserFromClaim(User, context);
-                var favorite = await context.Favorites
-                    .FirstOrDefaultAsync(f => f.Id == favoriteId && f.ArchivedAt == null);
+                var favorite = await context.Favorites.FirstOrDefaultAsync(f =>
+                    f.Id == favoriteId && f.ArchivedAt == null
+                );
 
                 if (favorite == null)
                 {
@@ -374,7 +422,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 404,
                         Message = "Favori non trouvé",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -385,7 +433,7 @@ namespace MainBoilerPlate.Services
                     {
                         Status = 403,
                         Message = "Vous n'avez pas le droit de supprimer ce favori",
-                        Data = null
+                        Data = null,
                     };
                 }
 
@@ -399,7 +447,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 200,
                     Message = "Favori supprimé avec succès",
-                    Data = null
+                    Data = null,
                 };
             }
             catch (Exception ex)
@@ -408,7 +456,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la suppression du favori: {ex.Message}",
-                    Data = null
+                    Data = null,
                 };
             }
         }
@@ -424,16 +472,17 @@ namespace MainBoilerPlate.Services
             try
             {
                 var student = CheckUser.GetUserFromClaim(User, context);
-                var isFavorite = await context.Favorites
-                    .AnyAsync(f => f.StudentId == student.Id 
-                        && f.TeacherId == teacherId 
-                        && f.ArchivedAt == null);
+                var isFavorite = await context.Favorites.AnyAsync(f =>
+                    f.StudentId == student.Id && f.TeacherId == teacherId && f.ArchivedAt == null
+                );
 
                 return new ResponseDTO<bool>
                 {
                     Status = 200,
-                    Message = isFavorite ? "Le professeur est en favori" : "Le professeur n'est pas en favori",
-                    Data = isFavorite
+                    Message = isFavorite
+                        ? "Le professeur est en favori"
+                        : "Le professeur n'est pas en favori",
+                    Data = isFavorite,
                 };
             }
             catch (Exception ex)
@@ -442,7 +491,7 @@ namespace MainBoilerPlate.Services
                 {
                     Status = 500,
                     Message = $"Erreur lors de la vérification: {ex.Message}",
-                    Data = false
+                    Data = false,
                 };
             }
         }

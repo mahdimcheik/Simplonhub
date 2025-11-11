@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Security.Claims;
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Utilities;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MainBoilerPlate.Services
 {
-    public class UsersService(MainContext context)
+    public class UsersService(MainContext context, UserManager<UserApp> userManager)
     {
         public async Task<ResponseDTO<List<UserResponseDTO>>> GetUsers(
             DynamicFilters<UserApp> tableState
@@ -75,21 +76,27 @@ namespace MainBoilerPlate.Services
             };
         }
 
-        public async Task<ResponseDTO<List<UserResponseDTO>>> GetTeachers(
-    DynamicFilters<UserApp> tableState
+        public async Task<ResponseDTO<List<TeacherResponseDTO>>> GetTeachers(
+    DynamicFilters<UserApp> tableState, ClaimsPrincipal User
 )
         {
+            var user = CheckUser.GetUserFromClaim(User, context);
+            
+            var userRoles = await userManager.GetRolesAsync(user);
+
             var query = context
                 .Users.Include(x => x.Languages)
                 .Include(x => x.UserRoles)
                 .Where(x => x.UserRoles.Any(ur => ur.RoleId == HardCode.ROLE_TEACHER))
                 .Include(x => x.Gender)
-                //.Include(x => x.Status)
-                //.Include(x => x.Experiences)
-                //.Include(x => x.Formations)
                 .Include(x => x.TeacherCursuses)
                 .Include(x => x.ProgrammingLanguages)
                 .AsQueryable();
+
+            if(userRoles.Contains("Student"))
+            {
+                query = query.Include(x => x.FanStudents.Where(f => f.StudentId == user.Id));
+            }
 
             if (!string.IsNullOrEmpty(tableState.Search))
             {
@@ -105,12 +112,12 @@ namespace MainBoilerPlate.Services
 
             var roles = await context.Roles.ToListAsync();
 
-            return new ResponseDTO<List<UserResponseDTO>>
+            return new ResponseDTO<List<TeacherResponseDTO>>
             {
                 Status = 200,
                 Message = "Utilisateurs récupérés avec succès",
                 Data = countValues
-                    .Values.Select(x => new UserResponseDTO(
+                    .Values.Select(x => new TeacherResponseDTO(
                         x,
                         roles
                             .Where(r => x.UserRoles.Select(ur => ur.RoleId).Contains(r.Id))

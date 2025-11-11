@@ -99,6 +99,15 @@ namespace MainBoilerPlate.Models
         }
     }
 
+    public class TeacherResponseDTO : UserResponseDTO
+    {
+        public bool  IsFavorite { get; set; }
+
+        public TeacherResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles) : base(user, roles)
+        {
+            IsFavorite = user.FanStudents.Count > 0;
+        }
+    }
     /// <summary>
     /// Modèle de données pour la connexion utilisateur
     /// </summary>
