@@ -156,49 +156,24 @@ namespace MainBoilerPlate.Models
                 
                 Expression? expression = null;
 
-                // Check if we're dealing with a collection property
-                if (propertyPath.Length > 1)
+                // Analyze the property path to detect collections
+                var collectionInfo = AnalyzePropertyPath(entityType, propertyPath);
+                
+                if (collectionInfo.HasCollection)
                 {
-                    var firstProperty = entityType.GetProperty(
-                        propertyPath[0],
-                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                    // Handle collection property filtering (simple or nested)
+                    expression = BuildCollectionFilterExpression(
+                        parameter, 
+                        propertyPath, 
+                        filter, 
+                        entityType,
+                        key,
+                        collectionInfo
                     );
-
-                    if (firstProperty != null && IsCollectionType(firstProperty.PropertyType))
-                    {
-                        // Handle collection property filtering
-                        expression = BuildCollectionFilterExpression(
-                            parameter, 
-                            propertyPath, 
-                            filter, 
-                            entityType,
-                            key
-                        );
-                    }
-                    else
-                    {
-                        // Handle regular nested property
-                        var (member, propertyType) = GetNestedPropertyExpression(parameter, propertyPath, entityType);
-                        
-                        if (member == null || propertyType == null)
-                        {
-                            Console.WriteLine($"Property path '{key}' not found on type {entityType.Name}");
-                            continue;
-                        }
-
-                        if (filter.MatchMode.ToLower() == "in")
-                        {
-                            expression = BuildAnyExpression(filter, member, propertyType, key);
-                        }
-                        else
-                        {
-                            expression = BuildComparisonExpression(filter, member, propertyType, key);
-                        }
-                    }
                 }
                 else
                 {
-                    // Simple property (no nesting)
+                    // Handle regular property (simple or nested, no collections)
                     var (member, propertyType) = GetNestedPropertyExpression(parameter, propertyPath, entityType);
                     
                     if (member == null || propertyType == null)
@@ -235,6 +210,53 @@ namespace MainBoilerPlate.Models
         }
 
         /// <summary>
+        /// Analyzes a property path to detect collections and their positions
+        /// Example: "Teacher/Languages/Id" => CollectionIndex = 1 (Languages is collection)
+        /// </summary>
+        private static CollectionPathInfo AnalyzePropertyPath(Type entityType, string[] propertyPath)
+        {
+            Type currentType = entityType;
+            
+            for (int i = 0; i < propertyPath.Length; i++)
+            {
+                var property = currentType.GetProperty(
+                    propertyPath[i],
+                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                );
+
+                if (property == null)
+                {
+                    return new CollectionPathInfo { HasCollection = false };
+                }
+
+                if (IsCollectionType(property.PropertyType))
+                {
+                    // Found a collection
+                    return new CollectionPathInfo 
+                    { 
+                        HasCollection = true,
+                        CollectionIndex = i,
+                        CollectionProperty = property
+                    };
+                }
+
+                currentType = property.PropertyType;
+            }
+
+            return new CollectionPathInfo { HasCollection = false };
+        }
+
+        /// <summary>
+        /// Holds information about collection in a property path
+        /// </summary>
+        private class CollectionPathInfo
+        {
+            public bool HasCollection { get; set; }
+            public int CollectionIndex { get; set; }
+            public PropertyInfo? CollectionProperty { get; set; }
+        }
+
+        /// <summary>
         /// Check if a type is a collection type (IEnumerable, ICollection, List, etc.)
         /// </summary>
         private static bool IsCollectionType(Type type)
@@ -246,27 +268,52 @@ namespace MainBoilerPlate.Models
         }
 
         /// <summary>
-        /// Build filter expression for collection properties
-        /// Example: Languages/Id => x.Languages.Any(l => filterValues.Contains(l.Id))
+        /// Build filter expression for collection properties (supports multi-level nesting)
+        /// Example: "Teacher/Languages/Id" => x.Teacher.Languages.Any(l => filterValues.Contains(l.Id))
+        /// Example: "Languages/Id" => x.Languages.Any(l => filterValues.Contains(l.Id))
         /// </summary>
         private static Expression? BuildCollectionFilterExpression(
             Expression parameter,
             string[] propertyPath,
             FilterItem filter,
             Type entityType,
-            string key)
+            string key,
+            CollectionPathInfo collectionInfo)
         {
             try
             {
+                // Build expression up to the collection
+                // Example: for "Teacher/Languages/Id", build x.Teacher
+                Expression currentExpression = parameter;
+                Type currentType = entityType;
+
+                // Navigate to the collection property
+                for (int i = 0; i < collectionInfo.CollectionIndex; i++)
+                {
+                    var property = currentType.GetProperty(
+                        propertyPath[i],
+                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                    );
+
+                    if (property == null)
+                    {
+                        Console.WriteLine($"Property '{propertyPath[i]}' not found on type {currentType.Name}");
+                        return null;
+                    }
+
+                    currentExpression = Expression.Property(currentExpression, property);
+                    currentType = property.PropertyType;
+                }
+
                 // Get the collection property (e.g., "Languages")
-                var collectionProperty = entityType.GetProperty(
-                    propertyPath[0],
+                var collectionProperty = currentType.GetProperty(
+                    propertyPath[collectionInfo.CollectionIndex],
                     BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
                 );
 
                 if (collectionProperty == null)
                 {
-                    Console.WriteLine($"Collection property '{propertyPath[0]}' not found");
+                    Console.WriteLine($"Collection property '{propertyPath[collectionInfo.CollectionIndex]}' not found on type {currentType.Name}");
                     return null;
                 }
 
@@ -280,30 +327,40 @@ namespace MainBoilerPlate.Models
                 }
                 else
                 {
-                    Console.WriteLine($"Cannot determine element type for collection '{propertyPath[0]}'");
+                    Console.WriteLine($"Cannot determine element type for collection '{propertyPath[collectionInfo.CollectionIndex]}'");
                     return null;
                 }
 
-                // Get the nested property on the element (e.g., "Id" on Language)
-                var nestedPropertyName = propertyPath[1];
-                var nestedProperty = elementType.GetProperty(
-                    nestedPropertyName,
-                    BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
-                );
+                // Build collection access: x.Teacher.Languages
+                var collectionAccess = Expression.Property(currentExpression, collectionProperty);
 
-                if (nestedProperty == null)
-                {
-                    Console.WriteLine($"Nested property '{nestedPropertyName}' not found on type {elementType.Name}");
-                    return null;
-                }
-
-                // Build the Any() expression
-                // x.Languages.Any(l => filterValues.Contains(l.Id))
-                
-                var collectionAccess = Expression.Property(parameter, collectionProperty);
+                // Create lambda parameter for the collection item
                 var lambdaParameter = Expression.Parameter(elementType, "item");
-                var nestedPropertyAccess = Expression.Property(lambdaParameter, nestedProperty);
 
+                // Build the nested property access on the collection item
+                // Example: for "Teacher/Languages/Id", this builds: item.Id
+                Expression nestedPropertyAccess = lambdaParameter;
+                Type nestedPropertyType = elementType;
+
+                // Navigate remaining properties after the collection
+                for (int i = collectionInfo.CollectionIndex + 1; i < propertyPath.Length; i++)
+                {
+                    var property = nestedPropertyType.GetProperty(
+                        propertyPath[i],
+                        BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance
+                    );
+
+                    if (property == null)
+                    {
+                        Console.WriteLine($"Property '{propertyPath[i]}' not found on type {nestedPropertyType.Name}");
+                        return null;
+                    }
+
+                    nestedPropertyAccess = Expression.Property(nestedPropertyAccess, property);
+                    nestedPropertyType = property.PropertyType;
+                }
+
+                // Build the predicate expression
                 Expression? predicate = null;
 
                 if (filter.MatchMode.ToLower() == "in")
@@ -328,11 +385,11 @@ namespace MainBoilerPlate.Models
                     {
                         // Convert values to the property type
                         var convertedValues = values
-                            .Select(v => Convert.ChangeType(v, nestedProperty.PropertyType))
+                            .Select(v => Convert.ChangeType(v, nestedPropertyType))
                             .ToList();
 
                         // Create typed array
-                        var typedArray = Array.CreateInstance(nestedProperty.PropertyType, convertedValues.Count);
+                        var typedArray = Array.CreateInstance(nestedPropertyType, convertedValues.Count);
                         for (int i = 0; i < convertedValues.Count; i++)
                         {
                             typedArray.SetValue(convertedValues[i], i);
@@ -342,7 +399,7 @@ namespace MainBoilerPlate.Models
                         var containsMethod = typeof(Enumerable)
                             .GetMethods()
                             .First(m => m.Name == "Contains" && m.GetParameters().Length == 2)
-                            .MakeGenericMethod(nestedProperty.PropertyType);
+                            .MakeGenericMethod(nestedPropertyType);
 
                         var arrayConstant = Expression.Constant(typedArray);
                         predicate = Expression.Call(null, containsMethod, arrayConstant, nestedPropertyAccess);
@@ -351,7 +408,7 @@ namespace MainBoilerPlate.Models
                 else
                 {
                     // For other match modes on collections (equals, contains, etc.)
-                    predicate = BuildComparisonExpression(filter, nestedPropertyAccess, nestedProperty.PropertyType, key);
+                    predicate = BuildComparisonExpression(filter, nestedPropertyAccess, nestedPropertyType, key);
                 }
 
                 if (predicate == null)
@@ -371,6 +428,7 @@ namespace MainBoilerPlate.Models
             catch (Exception ex)
             {
                 Console.WriteLine($"Error building collection filter for '{key}': {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return null;
             }
         }

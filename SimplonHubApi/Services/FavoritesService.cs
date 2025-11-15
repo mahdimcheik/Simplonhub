@@ -44,8 +44,6 @@ namespace MainBoilerPlate.Services
                     .Include(f => f.Teacher)
                     .ThenInclude(t => t.ProgrammingLanguages)
                     .Include(f => f.Teacher)
-                    .ThenInclude(t => t.Languages)
-                    .Include(f => f.Teacher)
                     .ThenInclude(t => t.TeacherCursuses);
 
                 if (!string.IsNullOrEmpty(tableState.Search))
