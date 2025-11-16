@@ -564,6 +564,8 @@ namespace MainBoilerPlate.Models
         {
             try
             {
+                var property = propertyType.GetProperty(key);
+
                 var values = ParseFilterValues(filter);
 
                 if (values.Length > 0)

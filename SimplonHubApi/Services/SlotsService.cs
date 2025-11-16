@@ -534,6 +534,47 @@ namespace MainBoilerPlate.Services
             }
         }
 
+
+        /// <summary>
+        /// Récupère tous les créneaux
+        /// </summary>
+        /// <returns>Liste des créneaux</returns>
+        public async Task<ResponseDTO<List<BookingDetailsDTO>>> GetAllBookings(
+            DynamicFilters<Booking> tableState
+        )
+        {
+            try
+            {
+                var query =
+                    //await
+                    context
+                        .Bookings.AsNoTracking()
+                        .Where(s => s.ArchivedAt == null)
+                        .Include(s => s.Student)
+                        .Include(s => s.Slot)
+                        .ThenInclude(b => b.Teacher);
+
+                var bookings = await query.ApplyAndCountAsync(tableState);
+
+                return new ResponseDTO<List<BookingDetailsDTO>>
+                {
+                    Status = 200,
+                    Message = "Créneaux récupérés avec succès",
+                    Data = bookings.Values.Select(s => new BookingDetailsDTO(s)).ToList(),
+                    Count = bookings.Count,
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDTO<List<BookingDetailsDTO>>
+                {
+                    Status = 500,
+                    Message = $"Erreur lors de la récupération des créneaux: {ex.Message}",
+                    Data = null,
+                };
+            }
+        }
+
         /// <summary>
         /// Met à jour une réservation existante
         /// </summary>

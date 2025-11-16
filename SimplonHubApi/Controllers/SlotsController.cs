@@ -360,5 +360,33 @@ namespace MainBoilerPlate.Controllers
             return StatusCode(response.Status, response);
         }
         #endregion
+
+        #region reservations lists 
+        /// <summary>
+        /// Récupère tous les créneaux
+        /// </summary>
+        /// <returns>Liste de tous les créneaux</returns>
+        /// <response code="200">Créneaux récupérés avec succès</response>
+        /// <response code="500">Erreur interne du serveur</response>
+        [HttpPost("bookings")]
+        [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllBookings(
+            [FromBody] DynamicFilters<Slot> tableState
+        )
+        {
+            var response = await slotsService.GetAllSlotsAsync(tableState);
+
+            if (response.Status == 200)
+            {
+                return Ok(response);
+            }
+
+            return StatusCode(response.Status, response);
+        }
+        #endregion
     }
 }
