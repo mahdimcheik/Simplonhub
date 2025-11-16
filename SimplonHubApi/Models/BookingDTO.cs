@@ -12,7 +12,7 @@ namespace SimplonHubApi.Models
             booking.Status is not null ? new StatusBookingDTO(booking.Status) : null;
         public UserResponseDTO? Student =>
             booking.Student is not null ? new UserResponseDTO(booking.Student, null) : null;
-        public SlotResponseDTO? Slot => booking.Slot is not null ? new SlotResponseDTO(booking.Slot) : null;
+        public UserResponseDTO? Teacher => booking.Slot.Teacher is not null ? new UserResponseDTO(booking.Slot.Teacher, null) : null;
     }
 
     public class BookingCreateDTO

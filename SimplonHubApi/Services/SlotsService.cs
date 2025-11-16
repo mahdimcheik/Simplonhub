@@ -540,7 +540,7 @@ namespace MainBoilerPlate.Services
         /// </summary>
         /// <returns>Liste des créneaux</returns>
         public async Task<ResponseDTO<List<BookingDetailsDTO>>> GetAllBookings(
-            DynamicFilters<Booking> tableState
+            DynamicFilters<Booking> tableState, Guid? studentId, Guid? TeacherId
         )
         {
             try
@@ -549,17 +549,27 @@ namespace MainBoilerPlate.Services
                     //await
                     context
                         .Bookings.AsNoTracking()
-                        .Where(s => s.ArchivedAt == null)
-                        .Include(s => s.Student)
-                        .Include(s => s.Slot)
-                        .ThenInclude(b => b.Teacher);
+                        .Include(b => b.Student)
+                        .Where(s => s.ArchivedAt == null);
+                if(studentId is not null)
+                {
+                    query = query.Where(x => x.StudentId == studentId);
+                }
+
+                query = query.Include(b => b.Slot)
+                    .ThenInclude(s => s.Teacher);
+
+                if(TeacherId is not null)
+                {
+                    query = query.Where(b => b.Slot.TeacherId == TeacherId);
+                }
 
                 var bookings = await query.ApplyAndCountAsync(tableState);
 
                 return new ResponseDTO<List<BookingDetailsDTO>>
                 {
                     Status = 200,
-                    Message = "Créneaux récupérés avec succès",
+                    Message = "Réservations récupérées avec succès",
                     Data = bookings.Values.Select(s => new BookingDetailsDTO(s)).ToList(),
                     Count = bookings.Count,
                 };

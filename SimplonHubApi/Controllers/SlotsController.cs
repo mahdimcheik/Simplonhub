@@ -369,16 +369,16 @@ namespace MainBoilerPlate.Controllers
         /// <response code="200">Créneaux récupérés avec succès</response>
         /// <response code="500">Erreur interne du serveur</response>
         [HttpPost("bookings")]
-        [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<List<BookingDetailsDTO>>), StatusCodes.Status200OK)]
         [ProducesResponseType(
-            typeof(ResponseDTO<object>),
+            typeof(ResponseDTO<BookingDetailsDTO>),
             StatusCodes.Status500InternalServerError
         )]
-        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllBookings(
-            [FromBody] DynamicFilters<Slot> tableState
+        public async Task<ActionResult<ResponseDTO<List<BookingDetailsDTO>>>> GetAllBookings(
+            [FromBody] DynamicFilters<Booking> tableState, Guid? studentId, Guid? teacherId
         )
         {
-            var response = await slotsService.GetAllSlotsAsync(tableState);
+            var response = await slotsService.GetAllBookings(tableState, studentId, teacherId);
 
             if (response.Status == 200)
             {
