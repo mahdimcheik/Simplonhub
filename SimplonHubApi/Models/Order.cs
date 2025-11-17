@@ -11,6 +11,6 @@ namespace MainBoilerPlate.Models
         public int ReductionAmount { get; set; }
         public Guid StudentId { get; set; }
         public UserApp Student { get; set; }
-        public ICollection<Booking> Bookings { get; set; }
+        //public ICollection<Booking> Bookings { get; set; }
     }
 }

@@ -1,10 +1,13 @@
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Services;
+using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.EntityFrameworkCore;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Controllers
 {
@@ -26,16 +29,21 @@ namespace MainBoilerPlate.Controllers
         /// <response code="500">Erreur interne du serveur</response>
         [HttpPost("all")]
         [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllSlots([FromBody] DynamicFilters<Slot> tableState)
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAllSlots(
+            [FromBody] DynamicFilters<Slot> tableState
+        )
         {
             var response = await slotsService.GetAllSlotsAsync(tableState);
-            
+
             if (response.Status == 200)
             {
                 return Ok(response);
             }
-            
+
             return StatusCode(response.Status, response);
         }
 
@@ -50,12 +58,16 @@ namespace MainBoilerPlate.Controllers
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
         public async Task<ActionResult<ResponseDTO<SlotResponseDTO>>> GetSlotById(
-            [FromRoute] Guid id)
+            [FromRoute] Guid id
+        )
         {
             var response = await slotsService.GetSlotByIdAsync(id);
-            
+
             return StatusCode(response.Status, response);
         }
 
@@ -68,17 +80,67 @@ namespace MainBoilerPlate.Controllers
         /// <response code="500">Erreur interne du serveur</response>
         [HttpGet("teacher/{teacherId:guid}")]
         [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
         public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetSlotsByTeacherId(
-            [FromRoute] Guid teacherId)
+            [FromRoute] Guid teacherId
+        )
         {
             var response = await slotsService.GetSlotsByTeacherIdAsync(teacherId);
-            
+
             if (response.Status == 200)
             {
                 return Ok(response);
             }
-            
+
+            return StatusCode(response.Status, response);
+        }
+
+        /// <summary>
+        /// Récupère tous les créneaux d'un enseignant
+        /// </summary>
+        /// <param name="teacherId">Identifiant de l'enseignant</param>
+        /// <returns>Liste des créneaux de l'enseignant</returns>
+        /// <response code="200">Créneaux de l'enseignant récupérés avec succès</response>
+        /// <response code="500">Erreur interne du serveur</response>
+        [HttpGet("student")]
+        [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetSlotsByStudent(
+            [FromQuery] DateTimeOffset dateFrom,
+            [FromQuery] DateTimeOffset dateTo,
+            [FromQuery] Guid? teacherId
+        )
+        {
+            var user = CheckUser.GetUserFromClaim(User, context);
+            if (user == null)
+            {
+                return Unauthorized(
+                    new ResponseDTO<object>
+                    {
+                        Status = 401,
+                        Message = "Utilisateur non authentifié",
+                        Data = null,
+                    }
+                );
+            }
+            var response = await slotsService.GetSlotsByStudentIdAsync(
+                user.Id,
+                dateFrom,
+                dateTo,
+                teacherId
+            );
+
+            if (response.Status == 200)
+            {
+                return Ok(response);
+            }
+
             return StatusCode(response.Status, response);
         }
 
@@ -90,16 +152,19 @@ namespace MainBoilerPlate.Controllers
         /// <response code="500">Erreur interne du serveur</response>
         [HttpGet("available")]
         [ProducesResponseType(typeof(ResponseDTO<List<SlotResponseDTO>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
         public async Task<ActionResult<ResponseDTO<List<SlotResponseDTO>>>> GetAvailableSlots()
         {
             var response = await slotsService.GetAvailableSlotsAsync();
-            
+
             if (response.Status == 200)
             {
                 return Ok(response);
             }
-            
+
             return StatusCode(response.Status, response);
         }
 
@@ -116,22 +181,28 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
         public async Task<ActionResult<ResponseDTO<SlotResponseDTO>>> CreateSlot(
-            [FromBody] SlotCreateDTO slotDto)
+            [FromBody] SlotCreateDTO slotDto
+        )
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ResponseDTO<object>
-                {
-                    Status = 400,
-                    Message = "Données de validation invalides",
-                    Data = ModelState
-                });
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
             }
 
             var response = await slotsService.CreateSlotAsync(slotDto);
-            
+
             return StatusCode(response.Status, response);
         }
 
@@ -149,23 +220,85 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
         public async Task<ActionResult<ResponseDTO<SlotResponseDTO>>> UpdateSlot(
             [FromRoute] Guid id,
-            [FromBody] SlotUpdateDTO slotDto)
+            [FromBody] SlotUpdateDTO slotDto
+        )
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ResponseDTO<object>
-                {
-                    Status = 400,
-                    Message = "Données de validation invalides",
-                    Data = ModelState
-                });
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
             }
 
             var response = await slotsService.UpdateSlotAsync(id, slotDto, User);
-            
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPut("update-booking")]
+        [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<SlotResponseDTO>>> UpdateBookingDetails(
+            [FromBody] BookingUpdateDTO bookingDto
+        )
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
+            }
+
+            var response = await slotsService.UpdateBookingDetailsAsync(bookingDto, User);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPut("confirm-booking/{id:guid}")]
+        [ProducesResponseType(typeof(ResponseDTO<SlotResponseDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<bool>>> ConfirmBooking([FromRoute] Guid id)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(
+                    new ResponseDTO<object>
+                    {
+                        Status = 400,
+                        Message = "Données de validation invalides",
+                        Data = ModelState,
+                    }
+                );
+            }
+
+            var response = await slotsService.ConfirmBookingAsync(id, User);
+
             return StatusCode(response.Status, response);
         }
 
@@ -182,17 +315,78 @@ namespace MainBoilerPlate.Controllers
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<ResponseDTO<object>>> DeleteSlot(
-            [FromRoute] Guid id)
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<object>>> DeleteSlot([FromRoute] Guid id, bool? forceDelete)
         {
-            // For now, we'll need to pass a teacher ID - this might need to be adjusted based on your business logic
-            // You might want to get this from the authenticated user or pass it as a parameter
-            var teacherId = Guid.Empty; // This needs to be properly implemented based on your authentication
 
-            var response = await slotsService.DeleteSlotAsync(id, teacherId);
-            
+            var response = await slotsService.DeleteSlotAsync(id, User, forceDelete ?? false);
+
             return StatusCode(response.Status, response);
         }
+
+        #region book unbook
+        [HttpPost("book")]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<object>>> BookSlot(
+            [FromBody] BookingCreateDTO newBooking
+        )
+        { 
+            var response = await slotsService.BookSlot( newBooking,User);
+
+            return StatusCode(response.Status, response);
+        }
+
+        [HttpPost("unbook/{id:Guid}")]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ResponseDTO<object>), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<object>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<object>>> UnbookSlot([FromRoute] Guid id)
+        {
+            var response = await slotsService.UnBookingAsync(id, User);
+
+            return StatusCode(response.Status, response);
+        }
+        #endregion
+
+        #region reservations lists 
+        /// <summary>
+        /// Récupère tous les créneaux
+        /// </summary>
+        /// <returns>Liste de tous les créneaux</returns>
+        /// <response code="200">Créneaux récupérés avec succès</response>
+        /// <response code="500">Erreur interne du serveur</response>
+        [HttpPost("bookings")]
+        [ProducesResponseType(typeof(ResponseDTO<List<BookingDetailsDTO>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(ResponseDTO<BookingDetailsDTO>),
+            StatusCodes.Status500InternalServerError
+        )]
+        public async Task<ActionResult<ResponseDTO<List<BookingDetailsDTO>>>> GetAllBookings(
+            [FromBody] DynamicFilters<Booking> tableState, Guid? studentId, Guid? teacherId
+        )
+        {
+            var response = await slotsService.GetAllBookings(tableState, studentId, teacherId);
+
+            if (response.Status == 200)
+            {
+                return Ok(response);
+            }
+
+            return StatusCode(response.Status, response);
+        }
+        #endregion
     }
 }

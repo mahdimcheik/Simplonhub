@@ -27,6 +27,7 @@ namespace MainBoilerPlate.Models
         /// <example>ADMIN</example>
         public string? NormalizedName { get; set; }
         public string? Color { get; set; }
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// Date de création de l'enregistrement
@@ -48,6 +49,7 @@ namespace MainBoilerPlate.Models
             Id = role.Id;
             Name = role.Name ?? string.Empty;
             NormalizedName = role.NormalizedName;
+            DisplayName = role.DisplayName;
             CreatedAt = role.CreatedAt;
             UpdatedAt = role.UpdatedAt;
             Color = role.Color;

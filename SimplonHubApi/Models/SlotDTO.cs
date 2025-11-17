@@ -97,6 +97,71 @@ namespace MainBoilerPlate.Models
         }
     }
 
+    public class SlotDetailsDTO
+    {
+        /// <summary>
+        /// Identifiant unique du créneau
+        /// </summary>
+        /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+        [Required]
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Date et heure de début du créneau
+        /// </summary>
+        /// <example>2023-01-15T10:30:00Z</example>
+        [Required]
+        public DateTimeOffset DateFrom { get; set; }
+
+        /// <summary>
+        /// Date et heure de fin du créneau
+        /// </summary>
+        /// <example>2023-01-15T11:30:00Z</example>
+        [Required]
+        public DateTimeOffset DateTo { get; set; }
+
+        /// <summary>
+        /// Informations de l'enseignant
+        /// </summary>
+        public UserResponseDTO? Teacher { get; set; }
+
+        /// <summary>
+        /// Identifiant du type de créneau
+        /// </summary>
+        /// <example>550e8400-e29b-41d4-a716-446655440002</example>
+        [Required]
+        public Guid TypeId { get; set; }
+
+        /// <summary>
+        /// Informations du type de créneau
+        /// </summary>
+        public TypeSlotResponseDTO? Type { get; set; }
+
+        /// <summary>
+        /// Indique si le créneau est disponible (non réservé)
+        /// </summary>
+
+        public SlotDetailsDTO() { }
+
+        public SlotDetailsDTO(Slot slot)
+        {
+            Id = slot.Id;
+            DateFrom = slot.DateFrom;
+            DateTo = slot.DateTo;
+            TypeId = slot.TypeId;
+
+            if (slot.Teacher != null)
+            {
+                Teacher = new UserResponseDTO(slot.Teacher, null);
+            }
+
+            if (slot.Type != null)
+            {
+                Type = new TypeSlotResponseDTO(slot.Type);
+            }
+        }
+    }
+
     /// <summary>
     /// DTO pour la création d'un nouveau créneau
     /// </summary>

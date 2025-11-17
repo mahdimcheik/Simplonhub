@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MainBoilerPlate.Models.Generics;
 using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Models
 {
@@ -46,6 +47,11 @@ namespace MainBoilerPlate.Models
 
         // roles
         public ICollection<IdentityUserRole<Guid>> UserRoles { get; set; }
+
+        // favorites
+        public ICollection<Favorite> FavoriteTeachers { get; set; }
+        public ICollection<Favorite> FanStudents { get; set; }
+
     }
 
     public class UserResponseDTO
@@ -68,6 +74,11 @@ namespace MainBoilerPlate.Models
 
         [Required]
         public ICollection<RoleAppResponseDTO> Roles { get; set; }
+        public ICollection<LanguageResponseDTO>? Languages { get; set; }
+        public ICollection<ProgrammingLanguageResponseDTO>? ProgrammingLanguages { get; set; } 
+        public ICollection<FormationResponseDTO>? Formations { get; set; } 
+
+
 
         public UserResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles)
         {
@@ -82,9 +93,21 @@ namespace MainBoilerPlate.Models
             Description = user.Description;
             PhoneNumber = user.PhoneNumber;
             DateOfBirth = user.DateOfBirth;
+            Formations = user.Formations?.Select(f => new FormationResponseDTO(f)).ToList() ?? null;
+            Languages = user.Languages?.Select(l => new LanguageResponseDTO(l)).ToList() ?? null;
+            ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;            
         }
     }
 
+    public class TeacherResponseDTO : UserResponseDTO
+    {
+        public bool  IsFavorite { get; set; }
+
+        public TeacherResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles) : base(user, roles)
+        {
+            IsFavorite = user.FanStudents.Count > 0;
+        }
+    }
     /// <summary>
     /// Modèle de données pour la connexion utilisateur
     /// </summary>

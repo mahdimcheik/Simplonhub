@@ -54,6 +54,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<FakeDataService>();
     services.AddTransient<StatusAccountService>();
     services.AddTransient<RoleAppService>();
+    services.AddTransient<FavoritesService>();
 
     services.AddLogging(loggingBuilder =>
     {
@@ -307,6 +308,7 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
         };
         var superAdminPassword = EnvironmentVariables.SUPER_ADMIN_PASSWORD;
         if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
@@ -324,6 +326,96 @@ static void SeedUsers(IServiceProvider serviceProvider)
                 userManager.AddToRoleAsync(superAdminEmail, "SuperAdmin").Wait();
             }
         }
+
+#if DEBUG
+        // Seed a default admin user
+        var admin = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "Admin",
+            UserName = "admin@simplon.co",
+            Email = "admin@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
+        };
+        var adminPassword = "AdminPassword123!";
+        if (userManager.FindByEmailAsync(admin.Email).Result == null)
+        {
+            var createAdmin = userManager
+                .CreateAsync(admin, adminPassword)
+                .Result;
+            if (createAdmin.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Admin").Result)
+                {
+                    var role = new RoleApp { Name = "Admin" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(admin, "Admin").Wait();
+            }
+        }
+
+
+        // Seed a default teacher
+        var teacher = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "Teacher",
+            UserName = "teacher@simplon.co",
+            Email = "teacher@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
+        };
+        var teacherPassword = "TeacherPassword123!";
+        if (userManager.FindByEmailAsync(teacher.Email).Result == null)
+        {
+            var createTeacher = userManager
+                .CreateAsync(teacher, teacherPassword)
+                .Result;
+            if (createTeacher.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Teacher").Result)
+                {
+                    var role = new RoleApp { Name = "Teacher" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(teacher, "Teacher").Wait();
+            }
+        }
+
+        // Seed a default student
+        var student = new UserApp
+        {
+            FirstName = "Simple",
+            LastName = "Student",
+            UserName = "student@simplon.co",
+            Email = "student@simplon.co",
+            EmailConfirmed = true,
+            DateOfBirth = new DateTime(1986, 04, 21),
+            StatusId = HardCode.STATUS_CONFIRMED,
+            GenderId = HardCode.GENDER_OTHER
+        };
+        var studentPassword = "StudentPassword123!";
+        if (userManager.FindByEmailAsync(student.Email).Result == null)
+        {
+            var createStudent = userManager
+                .CreateAsync(student, studentPassword)
+                .Result;
+            if (createStudent.Succeeded)
+            {
+                if (!roleManager.RoleExistsAsync("Student").Result)
+                {
+                    var role = new RoleApp { Name = "Student" };
+                    roleManager.CreateAsync(role).Wait();
+                }
+                userManager.AddToRoleAsync(student, "Student").Wait();
+            }
+        }
+#endif
     }
 }
 #endregion

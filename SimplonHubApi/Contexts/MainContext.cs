@@ -2,12 +2,14 @@ using MainBoilerPlate.Models;
 using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SimplonHubApi.Models;
 
 namespace MainBoilerPlate.Contexts
 {
     public class MainContext : IdentityDbContext<UserApp, RoleApp, Guid>
     {
         public DbSet<UserApp> Users { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
         public DbSet<RoleApp> Roles { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Address> Addresses { get; set; }
@@ -15,8 +17,10 @@ namespace MainBoilerPlate.Contexts
         public DbSet<StatusAccount> Statuses { get; set; }
         public DbSet<TypeSlot> TypeSlots { get; set; }
         public DbSet<Slot> Slots { get; set; }
-        public DbSet<Order> Orders { get; set; }
+
+        //public DbSet<Order> Orders { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<StatusBooking> StatusBookings { get; set; }
         public DbSet<Formation> Formations { get; set; }
         public DbSet<Experience> Experiences { get; set; }
         public DbSet<Language> Languages { get; set; }
@@ -36,6 +40,7 @@ namespace MainBoilerPlate.Contexts
 
             // Les noms des tables dans la base de données
             builder.Entity<UserApp>().ToTable("Users");
+            builder.Entity<Favorite>().ToTable("Favorites");
             builder.Entity<RoleApp>().ToTable("Roles");
             builder.Entity<Gender>().ToTable("Genders");
             builder.Entity<Address>().ToTable("Addresses");
@@ -43,6 +48,7 @@ namespace MainBoilerPlate.Contexts
             builder.Entity<Slot>().ToTable("Slots");
             builder.Entity<Order>().ToTable("Orders");
             builder.Entity<Booking>().ToTable("Bookings");
+            builder.Entity<StatusBooking>().ToTable("StatusBookings");
             builder.Entity<RefreshToken>().ToTable("RefreshTokens");
             builder.Entity<Formation>().ToTable("Formations");
             builder.Entity<Experience>().ToTable("Experiences");
@@ -71,12 +77,27 @@ namespace MainBoilerPlate.Contexts
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
             });
 
+            builder.Entity<Favorite>(e =>
+            {
+                e.HasKey(u => u.Id);
+                e.Property(u => u.Id).IsRequired().HasMaxLength(64);
+                e.Property(u => u.Note).HasMaxLength(256);
+                e.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
+                e.Property(a => a.UpdatedAt).IsRequired().HasColumnType("timestamp with time zone");
+                e.Property(e => e.CreatedAt)
+                    .IsRequired()
+                    .HasColumnType("timestamp with time zone")
+                    .ValueGeneratedOnAdd()
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
+
             builder.Entity<RoleApp>(r =>
             {
                 r.HasKey(r => r.Id);
                 r.Property(r => r.Id).IsRequired().HasMaxLength(64);
                 r.Property(r => r.Name).IsRequired().HasMaxLength(64);
                 r.Property(r => r.NormalizedName).IsRequired().HasMaxLength(64);
+                r.Property(r => r.DisplayName).IsRequired().HasMaxLength(128);
                 r.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
                 r.Property(a => a.UpdatedAt).HasColumnType("timestamp with time zone");
 
@@ -118,6 +139,23 @@ namespace MainBoilerPlate.Contexts
                 g.HasKey(g => g.Id);
                 g.Property(g => g.Id).IsRequired().HasMaxLength(64);
                 g.Property(g => g.Name).IsRequired().HasMaxLength(64);
+                g.Property(g => g.Color).IsRequired().HasMaxLength(16);
+                g.Property(g => g.Icon).HasMaxLength(256);
+                g.Property(g => g.CreatedAt)
+                    .IsRequired()
+                    .HasColumnType("timestamp with time zone")
+                    .ValueGeneratedOnAdd()
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                g.Property(e => e.ArchivedAt).HasColumnType("timestamp with time zone");
+                g.Property(a => a.UpdatedAt).HasColumnType("timestamp with time zone");
+            });
+
+            builder.Entity<StatusBooking>(g =>
+            {
+                g.HasKey(g => g.Id);
+                g.Property(g => g.Id).IsRequired().HasMaxLength(64);
+                g.Property(g => g.Name).IsRequired().HasMaxLength(64);
+                g.Property(g => g.DisplayName).IsRequired().HasMaxLength(64);
                 g.Property(g => g.Color).IsRequired().HasMaxLength(16);
                 g.Property(g => g.Icon).HasMaxLength(256);
                 g.Property(g => g.CreatedAt)
@@ -247,10 +285,6 @@ namespace MainBoilerPlate.Contexts
                     .HasColumnType("decimal(18,2)")
                     .HasDefaultValue(0);
                 o.Property(a => a.ReductionPercentage).HasDefaultValue(0);
-                o.Property(a => a.TotalAmount)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)")
-                    .HasDefaultValue(0);
                 o.Property(a => a.UpdatedAt).HasColumnType("timestamp with time zone");
                 o.Property(a => a.CreatedAt)
                     .IsRequired()
@@ -396,6 +430,37 @@ namespace MainBoilerPlate.Contexts
                             .OnDelete(DeleteBehavior.Restrict)
                 );
 
+            // Favorites - Student adds Teacher to favorites
+            builder
+                .Entity<Favorite>()
+                .HasOne(f => f.Student)
+                .WithMany(u => u.FavoriteTeachers)
+                .HasForeignKey(f => f.StudentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .Entity<Favorite>()
+                .HasOne(f => f.Teacher)
+                .WithMany(u => u.FanStudents)
+                .HasForeignKey(f => f.TeacherId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // UserRole => UserApp, RoleApp
+            builder.Entity<Microsoft.AspNetCore.Identity.IdentityUserRole<Guid>>(userRole =>
+            {
+                userRole
+                    .HasOne<RoleApp>()
+                    .WithMany(r => r.UserRoles)
+                    .HasForeignKey(ur => ur.RoleId)
+                    .IsRequired();
+
+                userRole
+                    .HasOne<UserApp>()
+                    .WithMany(u => u.UserRoles)
+                    .HasForeignKey(ur => ur.UserId)
+                    .IsRequired();
+            });
+
             // User => RefreshToken
             builder
                 .Entity<RefreshToken>()
@@ -412,13 +477,7 @@ namespace MainBoilerPlate.Contexts
             // Slot => slotType
             builder.Entity<Slot>().HasOne(s => s.Type).WithMany().HasForeignKey(s => s.TypeId);
 
-            // Booking => Order, Student, slot
-            builder
-                .Entity<Booking>()
-                .HasOne(b => b.Order)
-                .WithMany(o => o.Bookings)
-                .HasForeignKey(b => b.OrderId);
-
+            // booking => student, statusBooking, slot
             builder
                 .Entity<Booking>()
                 .HasOne(b => b.Student)
@@ -430,6 +489,12 @@ namespace MainBoilerPlate.Contexts
                 .HasOne(b => b.Slot)
                 .WithOne(s => s.Booking)
                 .HasForeignKey<Booking>(b => b.SlotId);
+
+            builder
+                .Entity<Booking>()
+                .HasOne(b => b.Status)
+                .WithMany()
+                .HasForeignKey(b => b.StatusId);
 
             // Order => Student
             builder
@@ -458,7 +523,6 @@ namespace MainBoilerPlate.Contexts
                             .HasForeignKey("CursusId")
                             .OnDelete(DeleteBehavior.Restrict)
                 );
-            
 
             // Seed Roles
             List<RoleApp> roles = new()
@@ -468,6 +532,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_SUPER_ADMIN,
                     Name = "SuperAdmin",
                     NormalizedName = "SUPERADMIN",
+                    DisplayName = "Super Administrateur",
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -475,6 +540,8 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_ADMIN,
                     Name = "Admin",
                     NormalizedName = "ADMIN",
+                    DisplayName = "Administrateur",
+
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -482,6 +549,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_TEACHER,
                     Name = "Teacher",
                     NormalizedName = "TEACHER",
+                    DisplayName = "Professeur",
                     CreatedAt = DateTime.UtcNow,
                 },
                 new RoleApp
@@ -489,6 +557,7 @@ namespace MainBoilerPlate.Contexts
                     Id = HardCode.ROLE_STUDENT,
                     Name = "Student",
                     NormalizedName = "STUDENT",
+                    DisplayName = "Elève",
                     CreatedAt = DateTime.UtcNow,
                 },
             };
@@ -704,7 +773,6 @@ namespace MainBoilerPlate.Contexts
             builder.Entity<ProgrammingLanguage>().HasData(programmingLanguages);
 
             // seed slot types
-            // seed languages
             List<TypeSlot> typeSlots = new()
             {
                 new TypeSlot
@@ -719,28 +787,38 @@ namespace MainBoilerPlate.Contexts
                 {
                     Id = HardCode.SLOT_TYPE_PRESENTIAL,
                     Name = "Présentiel",
-                    Color = "#fa69b4",
+                    Color = "#aa69b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
-                }
+                },
             };
 
             builder.Entity<TypeSlot>().HasData(typeSlots);
 
-            // ✅ Configure navigation properties for Identity UserRoles
-            // This allows .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-            builder.Entity<Microsoft.AspNetCore.Identity.IdentityUserRole<Guid>>(userRole =>
+            // seed Status Bookings
+            List<StatusBooking> statusBookings = new()
             {
-                userRole.HasOne<RoleApp>()
-                    .WithMany(r => r.UserRoles)
-                    .HasForeignKey(ur => ur.RoleId)
-                    .IsRequired();
+                new StatusBooking
+                {
+                    Id = HardCode.BOOKING_PENDING,
+                    Name = "waiting",
+                    DisplayName = "En Attente",
+                    Color = "#ff69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new StatusBooking
+                {
+                    Id = HardCode.BOOKING__CONFIRMED,
+                    Name = "confirmed",
+                    DisplayName = "Confirmée",
+                    Color = "#fa69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+            };
 
-                userRole.HasOne<UserApp>()
-                    .WithMany(u => u.UserRoles)
-                    .HasForeignKey(ur => ur.UserId)
-                    .IsRequired();
-            });
+            builder.Entity<StatusBooking>().HasData(statusBookings);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)

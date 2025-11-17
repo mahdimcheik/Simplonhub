@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MainBoilerPlate.Migrations
+namespace SimplonHubApi.Migrations
 {
     [DbContext(typeof(MainContext))]
-    [Migration("20251019092524_affine-relation-slot-booking")]
-    partial class affinerelationslotbooking
+    [Migration("20251101204508_remake-db")]
+    partial class remakedb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -120,10 +120,10 @@ namespace MainBoilerPlate.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid>("SlotId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("SlotId")
+                    b.Property<Guid>("StatusId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("StudentId")
@@ -139,10 +139,10 @@ namespace MainBoilerPlate.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
-
                     b.HasIndex("SlotId")
                         .IsUnique();
+
+                    b.HasIndex("StatusId");
 
                     b.HasIndex("StudentId");
 
@@ -187,33 +187,33 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("cde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1847),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9902),
                             Icon = "",
                             Name = "Soft skills"
                         },
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("da5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1851),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9905),
                             Icon = "",
                             Name = "Technics"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("eba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1854),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9907),
                             Icon = "",
                             Name = "Front-end"
                         },
                         new
                         {
-                            Id = new Guid("41f1f997-c392-4aac-bef0-fc8acaf109ec"),
+                            Id = new Guid("f1f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1856),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9910),
                             Icon = "",
                             Name = "Back-end"
                         });
@@ -408,25 +408,25 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("2a5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1699),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9781),
                             Icon = "",
                             Name = "Female"
                         },
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("1de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1703),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9786),
                             Icon = "",
                             Name = "Male"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("3ba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1706),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9790),
                             Icon = "",
                             Name = "Other"
                         });
@@ -470,33 +470,33 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("11e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1886),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9942),
                             Icon = "",
                             Name = "French"
                         },
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("022eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1890),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9945),
                             Icon = "",
                             Name = "English"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("33a0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1892),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9948),
                             Icon = "",
                             Name = "Arab"
                         },
                         new
                         {
-                            Id = new Guid("41f1f997-c392-4aac-bef0-fc8acaf109ec"),
+                            Id = new Guid("44f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1895),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9950),
                             Icon = "",
                             Name = "Spanich"
                         });
@@ -540,25 +540,25 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("9de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1779),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9865),
                             Icon = "",
                             Name = "Beginner"
                         },
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("aa5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1783),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9869),
                             Icon = "",
                             Name = "Intermediate"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("bba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1785),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9873),
                             Icon = "",
                             Name = "Advanced"
                         });
@@ -654,33 +654,33 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("55e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1919),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9983),
                             Icon = "",
                             Name = "JavaScript"
                         },
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("066eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1922),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9986),
                             Icon = "",
                             Name = "Java"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("77a0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1924),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9989),
                             Icon = "",
                             Name = "C#"
                         },
                         new
                         {
-                            Id = new Guid("41f1f997-c392-4aac-bef0-fc8acaf109ec"),
+                            Id = new Guid("88f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1927),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9992),
                             Icon = "",
                             Name = "C++"
                         });
@@ -734,6 +734,11 @@ namespace MainBoilerPlate.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -759,28 +764,32 @@ namespace MainBoilerPlate.Migrations
                         new
                         {
                             Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1582),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9661),
+                            DisplayName = "Super Administrateur",
                             Name = "SuperAdmin",
                             NormalizedName = "SUPERADMIN"
                         },
                         new
                         {
                             Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1592),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9675),
+                            DisplayName = "Administrateur",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1596),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9678),
+                            DisplayName = "Professeur",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
                         },
                         new
                         {
                             Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b4a01"),
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1598),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9681),
+                            DisplayName = "Elève",
                             Name = "Student",
                             NormalizedName = "STUDENT"
                         });
@@ -863,25 +872,25 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("4de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1743),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9829),
                             Icon = "",
                             Name = "Pending"
                         },
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("5a5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1746),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9833),
                             Icon = "",
                             Name = "Confirmed"
                         },
                         new
                         {
-                            Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
+                            Id = new Guid("6ba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1748),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 521, DateTimeKind.Utc).AddTicks(9836),
                             Icon = "",
                             Name = "Banned"
                         });
@@ -925,17 +934,17 @@ namespace MainBoilerPlate.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Id = new Guid("99e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1955),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 522, DateTimeKind.Utc).AddTicks(23),
                             Icon = "",
                             Name = "Visio"
                         },
                         new
                         {
-                            Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Id = new Guid("0aaeaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 10, 19, 9, 25, 24, 221, DateTimeKind.Utc).AddTicks(1959),
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 522, DateTimeKind.Utc).AddTicks(27),
                             Icon = "",
                             Name = "Présentiel"
                         });
@@ -1156,6 +1165,68 @@ namespace MainBoilerPlate.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("SimplonHubApi.Models.StatusBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(64)
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StatusBookings", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("7de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
+                            Color = "#ff69b4",
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 522, DateTimeKind.Utc).AddTicks(54),
+                            DisplayName = "En Attente",
+                            Icon = "",
+                            Name = "waiting"
+                        },
+                        new
+                        {
+                            Id = new Guid("8a5eaf2f-0496-4035-a4b7-9210da39501c"),
+                            Color = "#fa69b4",
+                            CreatedAt = new DateTime(2025, 11, 1, 20, 45, 8, 522, DateTimeKind.Utc).AddTicks(57),
+                            DisplayName = "Confirmée",
+                            Icon = "",
+                            Name = "confirmed"
+                        });
+                });
+
             modelBuilder.Entity("UsersXLanguages", b =>
                 {
                     b.Property<Guid>("LanguageId")
@@ -1214,15 +1285,15 @@ namespace MainBoilerPlate.Migrations
 
             modelBuilder.Entity("MainBoilerPlate.Models.Booking", b =>
                 {
-                    b.HasOne("MainBoilerPlate.Models.Order", "Order")
-                        .WithMany("Bookings")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("MainBoilerPlate.Models.Slot", "Slot")
                         .WithOne("Booking")
                         .HasForeignKey("MainBoilerPlate.Models.Booking", "SlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SimplonHubApi.Models.StatusBooking", "Status")
+                        .WithMany()
+                        .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -1232,9 +1303,9 @@ namespace MainBoilerPlate.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Order");
-
                     b.Navigation("Slot");
+
+                    b.Navigation("Status");
 
                     b.Navigation("Student");
                 });
@@ -1417,11 +1488,6 @@ namespace MainBoilerPlate.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("MainBoilerPlate.Models.Order", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("MainBoilerPlate.Models.RoleApp", b =>
