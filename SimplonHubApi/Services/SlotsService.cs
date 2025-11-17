@@ -534,13 +534,14 @@ namespace MainBoilerPlate.Services
             }
         }
 
-
         /// <summary>
         /// Récupère tous les créneaux
         /// </summary>
         /// <returns>Liste des créneaux</returns>
         public async Task<ResponseDTO<List<BookingDetailsDTO>>> GetAllBookings(
-            DynamicFilters<Booking> tableState, Guid? studentId, Guid? TeacherId
+            DynamicFilters<Booking> tableState,
+            Guid? studentId,
+            Guid? TeacherId
         )
         {
             try
@@ -551,17 +552,48 @@ namespace MainBoilerPlate.Services
                         .Bookings.AsNoTracking()
                         .Include(b => b.Student)
                         .Where(s => s.ArchivedAt == null);
-                if(studentId is not null)
+                if (studentId is not null)
                 {
                     query = query.Where(x => x.StudentId == studentId);
                 }
 
-                query = query.Include(b => b.Slot)
-                    .ThenInclude(s => s.Teacher);
+                query = query.Include(b => b.Slot).ThenInclude(s => s.Teacher);
 
-                if(TeacherId is not null)
+                if (TeacherId is not null)
                 {
                     query = query.Where(b => b.Slot.TeacherId == TeacherId);
+                }
+
+                // filtre global : search
+                if (tableState.Search is not null)
+                {
+                    var search = tableState.Search;
+
+                    query = query.Where(b =>
+                        EF.Functions.ILike(
+                            string.Concat(b.Slot.Teacher.FirstName, " ", b.Slot.Teacher.LastName),
+                            $"%{search}%"
+                        )
+                        || EF.Functions.ILike(b.Title, $"%{search}%")
+                        || EF.Functions.ILike(b.Description, $"%{search}%")
+                    );
+                }
+
+                // filtre special : fistname + lastname
+                if (
+                    tableState.Filters is not null
+                    && tableState.Filters.ContainsKey("teacher/lastName")
+                )
+                {
+                    var searchName = tableState
+                        .Filters.GetValueOrDefault("teacher/lastName")
+                        ?.Value.ToString();
+                    query = query.Where(b =>
+                        EF.Functions.ILike(
+                            string.Concat(b.Slot.Teacher.FirstName, " ", b.Slot.Teacher.LastName),
+                            $"%{searchName}%"
+                        )
+                    );
                 }
 
                 var bookings = await query.ApplyAndCountAsync(tableState);
