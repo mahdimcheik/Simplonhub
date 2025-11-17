@@ -557,7 +557,11 @@ namespace MainBoilerPlate.Services
                     query = query.Where(x => x.StudentId == studentId);
                 }
 
-                query = query.Include(b => b.Slot).ThenInclude(s => s.Teacher);
+                query = query
+                    .Include(b => b.Slot)
+                    .ThenInclude(s => s.Teacher)
+                    .Include(b => b.Slot)
+                    .ThenInclude(s => s.Type);
 
                 if (TeacherId is not null)
                 {
@@ -582,15 +586,31 @@ namespace MainBoilerPlate.Services
                 // filtre special : fistname + lastname
                 if (
                     tableState.Filters is not null
-                    && tableState.Filters.ContainsKey("teacher/lastName")
+                    && tableState.Filters.ContainsKey("slot/teacher/lastName")
                 )
                 {
                     var searchName = tableState
-                        .Filters.GetValueOrDefault("teacher/lastName")
+                        .Filters.GetValueOrDefault("slot/teacher/lastName")
                         ?.Value.ToString();
                     query = query.Where(b =>
                         EF.Functions.ILike(
                             string.Concat(b.Slot.Teacher.FirstName, " ", b.Slot.Teacher.LastName),
+                            $"%{searchName}%"
+                        )
+                    );
+                }
+
+                if (
+                    tableState.Filters is not null
+                    && tableState.Filters.ContainsKey("student/lastName")
+                )
+                {
+                    var searchName = tableState
+                        .Filters.GetValueOrDefault("student/lastName")
+                        ?.Value.ToString();
+                    query = query.Where(b =>
+                        EF.Functions.ILike(
+                            string.Concat(b.Student.FirstName, " ", b.Student.LastName),
                             $"%{searchName}%"
                         )
                     );
