@@ -3,6 +3,7 @@ using SimplonHubApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using SimplonHubApi.Templates;
 
 namespace SimplonHubApi.Controllers
 {
@@ -14,7 +15,7 @@ namespace SimplonHubApi.Controllers
     [Route("[controller]")]
     [ApiController]
     [EnableCors]
-    public class FakeDataController(FakeDataService fakeDataService) : ControllerBase
+    public class FakeDataController(FakeDataService fakeDataService, MailService mailService) : ControllerBase
     {
         /// <summary>
         /// Génère des utilisateurs fictifs avec différents rôles (Admin, Teacher, Student)

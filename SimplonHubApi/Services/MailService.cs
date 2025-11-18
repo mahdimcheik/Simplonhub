@@ -1,10 +1,10 @@
 using System.Dynamic;
 using System.Net;
 using System.Net.Mail;
+using RazorLight;
 using SimplonHubApi.Models;
 using SimplonHubApi.Templates;
 using SimplonHubApi.Utilities;
-using RazorLight;
 
 namespace SimplonHubApi.Services
 {
@@ -57,7 +57,10 @@ namespace SimplonHubApi.Services
                     EnvironmentVariables.API_FRONT_URL
                 );
 
-                string template =  await _razorLightEngine.CompileRenderAsync("ConfirmAccountTemplate.cshtml", model);     
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ConfirmAccountTemplate.cshtml",
+                    model
+                );
 
                 MailApp mailApp = new MailApp
                 {
@@ -85,7 +88,10 @@ namespace SimplonHubApi.Services
                     EnvironmentVariables.API_FRONT_URL
                 );
 
-                string template = await _razorLightEngine.CompileRenderAsync("ForgotPasswordTemplate.cshtml", model);
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ForgotPasswordTemplate.cshtml",
+                    model
+                );
 
                 MailApp mailApp = new MailApp
                 {
@@ -103,27 +109,27 @@ namespace SimplonHubApi.Services
             }
         }
 
-        public async Task SendReminderForTeacher(UserApp receiver, string confirmLink)
+        public async Task SendReminder(ReminderModel reminder)
         {
             try
             {
-                var model = new ResetPasswordModel(
-                    receiver,
-                    confirmLink,
-                    EnvironmentVariables.API_FRONT_URL
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ReminderTemplate.cshtml",
+                    reminder
                 );
-
-                string template = await _razorLightEngine.CompileRenderAsync("ForgotPasswordTemplate.cshtml", model);
 
                 MailApp mailApp = new MailApp
                 {
                     MailFrom = EnvironmentVariables.DO_NO_REPLY_MAIL,
-                    MailTo = receiver.Email!,
-                    MailSubject = "Récupérer votre mot de passe",
+                    MailTo = reminder.Teacher.Email,
+                    MailSubject = "SimplongHub: Rappel séance",
                     MailBody = template,
                 };
 
-                await SendEmail(mailApp);
+                if (!reminder.Teacher.Email.Contains("simplon"))
+                {
+                    await SendEmail(mailApp);
+                }
             }
             catch (Exception ex)
             {

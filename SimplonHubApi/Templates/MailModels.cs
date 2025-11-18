@@ -37,8 +37,9 @@ namespace SimplonHubApi.Templates
         public UserApp Student { get; set; }
         public Slot Slot { get; set; }
         public string WebsiteLink { get; set; }
+        public bool forTeacher { get; set; } = true;
 
-        public ReminderModel(UserApp teacher, UserApp student, Slot slot, string confirmLink, string websiteLink)
+        public ReminderModel(UserApp teacher, UserApp student, Slot slot, string websiteLink)
         {
             Teacher = teacher;
             Student = student;

@@ -1,10 +1,6 @@
 using System.Text;
 using Hangfire;
 using Hangfire.PostgreSql;
-using SimplonHubApi.Contexts;
-using SimplonHubApi.Models;
-using SimplonHubApi.Services;
-using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
@@ -12,7 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
 using SimplonHubApi.Services;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -210,7 +210,6 @@ static void ConfigureSwagger(IServiceCollection services)
 {
     services.AddSwaggerGen(c =>
     {
-        c.OperationFilter<ODataQueryOperationFilter>();
         c.SwaggerDoc(
             "v1",
             new OpenApiInfo
@@ -449,12 +448,28 @@ static void ConfigureJobScheduler(IServiceProvider serviceProvider)
     using (var scope = serviceProvider.CreateScope())
     {
         var schedulerService = scope.ServiceProvider.GetRequiredService<SchedulerService>();
-        
-         RecurringJob.AddOrUpdate(
-             "CleanOldSlots",
-             () => schedulerService.RemoveOldSlots(),
-             Cron.Daily
-         );
+
+        RecurringJob.AddOrUpdate(
+            "CleanOldSlots",
+            () => schedulerService.RemoveOldSlots(),
+            Cron.Daily,
+            new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.Local,
+                MisfireHandling = MisfireHandlingMode.Relaxed,
+            }
+        );
+
+        RecurringJob.AddOrUpdate(
+            "SendReminders",
+            () => schedulerService.SendReminderMails(),
+            Cron.Daily(9),
+            new RecurringJobOptions
+            {
+                TimeZone = TimeZoneInfo.Local,
+                MisfireHandling = MisfireHandlingMode.Relaxed,
+            }
+        );
     }
 }
 #endregion
