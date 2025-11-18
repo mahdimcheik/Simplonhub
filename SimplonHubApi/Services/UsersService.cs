@@ -1,12 +1,12 @@
 using System.Linq;
 using System.Security.Claims;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     public class UsersService(MainContext context, UserManager<UserApp> userManager)
     {

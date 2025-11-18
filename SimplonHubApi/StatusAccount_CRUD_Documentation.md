@@ -6,27 +6,27 @@ Cette documentation décrit l'implémentation complète du CRUD (Create, Read, U
 
 ## 🗂️ Fichiers Créés/Modifiés
 
-### **1. Models & DTOs** - `MainBoilerPlate/Models/StatusAccount.cs`
+### **1. Models & DTOs** - `SimplonHubApi/Models/StatusAccount.cs`
 - **StatusAccountResponseDTO** - DTO pour l'affichage détaillé
 - **StatusAccountCreateDTO** - DTO pour la création
 - **StatusAccountUpdateDTO** - DTO pour la mise à jour
 - **StatusAccountDTO** - DTO existant conservé pour compatibilité
 
-### **2. Service** - `MainBoilerPlate/Services/StatusAccountService.cs`
+### **2. Service** - `SimplonHubApi/Services/StatusAccountService.cs`
 - `GetAllStatusAccountsAsync()` - Récupère tous les statuts
 - `GetStatusAccountByIdAsync()` - Récupère un statut par ID
 - `CreateStatusAccountAsync()` - Crée un nouveau statut
 - `UpdateStatusAccountAsync()` - Met à jour un statut
 - `DeleteStatusAccountAsync()` - Suppression logique d'un statut
 
-### **3. Controller** - `MainBoilerPlate/Controllers/StatusAccountController.cs`
+### **3. Controller** - `SimplonHubApi/Controllers/StatusAccountController.cs`
 - `GET /statusaccount/all` - Liste tous les statuts
 - `GET /statusaccount/{id}` - Récupère un statut par ID
 - `POST /statusaccount/create` - Crée un nouveau statut
 - `PUT /statusaccount/update/{id}` - Met à jour un statut
 - `DELETE /statusaccount/delete/{id}` - Supprime un statut
 
-### **4. Configuration** - `MainBoilerPlate/Program.cs`
+### **4. Configuration** - `SimplonHubApi/Program.cs`
 - Enregistrement de `StatusAccountService` dans le conteneur DI
 
 ---

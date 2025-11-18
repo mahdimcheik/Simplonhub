@@ -1,12 +1,12 @@
 using System.Dynamic;
 using System.Net;
 using System.Net.Mail;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Templates;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Models;
+using SimplonHubApi.Templates;
+using SimplonHubApi.Utilities;
 using RazorLight;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     public class MailService
     {
@@ -18,7 +18,6 @@ namespace MainBoilerPlate.Services
             _env = env;
             _razorLightEngine = new RazorLightEngineBuilder()
                 .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Templates"))
-                //.UseFileSystemProject(Path.Combine(_env.WebRootPath, "TemplatesInvoice"))
                 .UseMemoryCachingProvider()
                 .Build();
         }
@@ -77,6 +76,34 @@ namespace MainBoilerPlate.Services
         }
 
         public async Task SendResetPasswordAccount(UserApp receiver, string confirmLink)
+        {
+            try
+            {
+                var model = new ResetPasswordModel(
+                    receiver,
+                    confirmLink,
+                    EnvironmentVariables.API_FRONT_URL
+                );
+
+                string template = await _razorLightEngine.CompileRenderAsync("ForgotPasswordTemplate.cshtml", model);
+
+                MailApp mailApp = new MailApp
+                {
+                    MailFrom = EnvironmentVariables.DO_NO_REPLY_MAIL,
+                    MailTo = receiver.Email!,
+                    MailSubject = "Récupérer votre mot de passe",
+                    MailBody = template,
+                };
+
+                await SendEmail(mailApp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        public async Task SendReminderForTeacher(UserApp receiver, string confirmLink)
         {
             try
             {

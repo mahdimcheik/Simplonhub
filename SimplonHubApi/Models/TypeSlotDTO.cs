@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     /// <summary>
     /// DTO pour la création d'un nouveau type de créneau

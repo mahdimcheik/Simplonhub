@@ -1,10 +1,10 @@
 using System.Text;
 using Hangfire;
 using Hangfire.PostgreSql;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
@@ -215,9 +215,9 @@ static void ConfigureSwagger(IServiceCollection services)
             "v1",
             new OpenApiInfo
             {
-                Title = "MainBoilerPlate API",
+                Title = "SimplonHubApi API",
                 Version = "v1",
-                Description = "API for MainBoilerPlate application",
+                Description = "API for SimplonHubApi application",
             }
         );
 
@@ -302,9 +302,9 @@ static void ConfigureMiddlewarePipeline(WebApplication app)
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MainBoilerPlate API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "SimplonHubApi API v1");
         c.RoutePrefix = string.Empty; // This makes Swagger UI available at the root URL
-        c.DocumentTitle = "MainBoilerPlate API Documentation";
+        c.DocumentTitle = "SimplonHubApi API Documentation";
     });
 
     app.UseHangfireDashboard("/hangfire");

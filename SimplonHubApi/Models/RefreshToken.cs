@@ -1,8 +1,8 @@
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models.Generics;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class RefreshToken
     {

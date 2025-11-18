@@ -1,5 +1,5 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models;
+using SimplonHubApi.Models.Generics;
 
 namespace SimplonHubApi.Models
 {

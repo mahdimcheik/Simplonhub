@@ -1,6 +1,6 @@
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models.Generics;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class Order : BaseModel
     {

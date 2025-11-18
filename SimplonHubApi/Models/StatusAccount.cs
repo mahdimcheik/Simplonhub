@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models.Generics;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class StatusAccount : BaseModelOption { }
 

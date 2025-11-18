@@ -1,10 +1,10 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     /// <summary>
     /// Contrôleur pour la gestion des catégories de cursus

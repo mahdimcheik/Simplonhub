@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Threading.Tasks;
 using Hangfire;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Utilities;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
 

@@ -1,4 +1,4 @@
-using MainBoilerPlate.Models;
+using SimplonHubApi.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace SimplonHubApi.Models

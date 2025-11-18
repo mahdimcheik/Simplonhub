@@ -1,9 +1,9 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using SimplonHubApi.Services;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]

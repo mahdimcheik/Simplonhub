@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models.Generics;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class Address : BaseModel
     {

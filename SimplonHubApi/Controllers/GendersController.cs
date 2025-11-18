@@ -1,10 +1,10 @@
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
