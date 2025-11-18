@@ -1,4 +1,6 @@
 using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
 using MainBoilerPlate.Contexts;
 using MainBoilerPlate.Models;
 using MainBoilerPlate.Services;
@@ -10,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using SimplonHubApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,9 @@ using (var scope = app.Services.CreateScope())
 
 // Configurer le pipeline de middleware
 ConfigureMiddlewarePipeline(app);
+
+// Configure job scheduler
+ConfigureJobScheduler(app.Services);
 
 app.Run();
 
@@ -55,6 +61,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<StatusAccountService>();
     services.AddTransient<RoleAppService>();
     services.AddTransient<FavoritesService>();
+    services.AddScoped<SchedulerService>();
 
     services.AddLogging(loggingBuilder =>
     {
@@ -94,6 +101,7 @@ static void ConfigureServices(IServiceCollection services)
     ConfigureSwagger(services);
     ConfigureIdentity(services);
     ConfigureAuthentication(services);
+    ConfigureHangFire(services);
 }
 
 static void ConfigureCors(IServiceCollection services)
@@ -175,6 +183,27 @@ static void ConfigureAuthentication(IServiceCollection services)
                 ),
             };
         });
+}
+
+static void ConfigureHangFire(IServiceCollection services)
+{
+    // Hangfire configuration can be added here if needed in the future
+    services.AddHangfire(configuration =>
+        configuration
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(
+                (options) =>
+                {
+                    options.UseNpgsqlConnection(
+                        $"Host={EnvironmentVariables.DB_HOST};Port={EnvironmentVariables.DB_PORT};Database={EnvironmentVariables.DB_NAME};Username={EnvironmentVariables.DB_USER};Password={EnvironmentVariables.DB_PASSWORD};CommandTimeout=60;"
+                    );
+                }
+            )
+    );
+
+    services.AddHangfireServer();
 }
 
 static void ConfigureSwagger(IServiceCollection services)
@@ -278,6 +307,8 @@ static void ConfigureMiddlewarePipeline(WebApplication app)
         c.DocumentTitle = "MainBoilerPlate API Documentation";
     });
 
+    app.UseHangfireDashboard("/hangfire");
+
     app.UseRouting();
 
     app.UseCors();
@@ -308,7 +339,7 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
-            GenderId = HardCode.GENDER_OTHER
+            GenderId = HardCode.GENDER_OTHER,
         };
         var superAdminPassword = EnvironmentVariables.SUPER_ADMIN_PASSWORD;
         if (userManager.FindByEmailAsync(superAdminEmail.Email).Result == null)
@@ -338,14 +369,12 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
-            GenderId = HardCode.GENDER_OTHER
+            GenderId = HardCode.GENDER_OTHER,
         };
         var adminPassword = "AdminPassword123!";
         if (userManager.FindByEmailAsync(admin.Email).Result == null)
         {
-            var createAdmin = userManager
-                .CreateAsync(admin, adminPassword)
-                .Result;
+            var createAdmin = userManager.CreateAsync(admin, adminPassword).Result;
             if (createAdmin.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Admin").Result)
@@ -357,7 +386,6 @@ static void SeedUsers(IServiceProvider serviceProvider)
             }
         }
 
-
         // Seed a default teacher
         var teacher = new UserApp
         {
@@ -368,14 +396,12 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
-            GenderId = HardCode.GENDER_OTHER
+            GenderId = HardCode.GENDER_OTHER,
         };
         var teacherPassword = "TeacherPassword123!";
         if (userManager.FindByEmailAsync(teacher.Email).Result == null)
         {
-            var createTeacher = userManager
-                .CreateAsync(teacher, teacherPassword)
-                .Result;
+            var createTeacher = userManager.CreateAsync(teacher, teacherPassword).Result;
             if (createTeacher.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Teacher").Result)
@@ -397,14 +423,12 @@ static void SeedUsers(IServiceProvider serviceProvider)
             EmailConfirmed = true,
             DateOfBirth = new DateTime(1986, 04, 21),
             StatusId = HardCode.STATUS_CONFIRMED,
-            GenderId = HardCode.GENDER_OTHER
+            GenderId = HardCode.GENDER_OTHER,
         };
         var studentPassword = "StudentPassword123!";
         if (userManager.FindByEmailAsync(student.Email).Result == null)
         {
-            var createStudent = userManager
-                .CreateAsync(student, studentPassword)
-                .Result;
+            var createStudent = userManager.CreateAsync(student, studentPassword).Result;
             if (createStudent.Succeeded)
             {
                 if (!roleManager.RoleExistsAsync("Student").Result)
@@ -416,6 +440,21 @@ static void SeedUsers(IServiceProvider serviceProvider)
             }
         }
 #endif
+    }
+}
+#endregion
+#region job scheduler
+static void ConfigureJobScheduler(IServiceProvider serviceProvider)
+{
+    using (var scope = serviceProvider.CreateScope())
+    {
+        var schedulerService = scope.ServiceProvider.GetRequiredService<SchedulerService>();
+        
+         RecurringJob.AddOrUpdate(
+             "CleanOldSlots",
+             () => schedulerService.RemoveOldSlots(),
+             Cron.Daily
+         );
     }
 }
 #endregion
