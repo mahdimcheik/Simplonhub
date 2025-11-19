@@ -27,4 +27,5 @@ RUN dotnet publish "./SimplonHubApi.csproj" -c $BUILD_CONFIGURATION -o /app/publ
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=publish /app/publish/Templates ./Templates
 ENTRYPOINT ["dotnet", "SimplonHubApi.dll"]

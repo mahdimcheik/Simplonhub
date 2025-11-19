@@ -16,8 +16,32 @@ namespace SimplonHubApi.Services
         public MailService(IWebHostEnvironment env)
         {
             _env = env;
+            
+            // Use ContentRootPath which is more reliable in Docker containers
+            var templatesPath = Path.Combine(_env.ContentRootPath, "Templates");
+            
+            // Fallback: if Templates not found in ContentRootPath, try current directory
+            if (!Directory.Exists(templatesPath))
+            {
+                templatesPath = Path.Combine(Directory.GetCurrentDirectory(), "Templates");
+            }
+            
+            // Log the path for debugging
+            Console.WriteLine($"[MailService] Templates path: {templatesPath}");
+            Console.WriteLine($"[MailService] Templates directory exists: {Directory.Exists(templatesPath)}");
+            
+            if (Directory.Exists(templatesPath))
+            {
+                var files = Directory.GetFiles(templatesPath, "*.cshtml");
+                Console.WriteLine($"[MailService] Found {files.Length} template files:");
+                foreach (var file in files)
+                {
+                    Console.WriteLine($"  - {Path.GetFileName(file)}");
+                }
+            }
+            
             _razorLightEngine = new RazorLightEngineBuilder()
-                .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Templates"))
+                .UseFileSystemProject(templatesPath)
                 .UseMemoryCachingProvider()
                 .Build();
         }
@@ -74,7 +98,8 @@ namespace SimplonHubApi.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"[MailService] Error sending confirm account email: {ex.Message}");
+                Console.WriteLine($"[MailService] Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -105,7 +130,8 @@ namespace SimplonHubApi.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"[MailService] Error sending reset password email: {ex.Message}");
+                Console.WriteLine($"[MailService] Stack trace: {ex.StackTrace}");
             }
         }
 
@@ -133,7 +159,8 @@ namespace SimplonHubApi.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"[MailService] Error sending reminder email: {ex.Message}");
+                Console.WriteLine($"[MailService] Stack trace: {ex.StackTrace}");
             }
         }
     }
