@@ -1,11 +1,11 @@
 using Bogus;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     /// <summary>
     /// Service pour générer des données fictives avec Bogus

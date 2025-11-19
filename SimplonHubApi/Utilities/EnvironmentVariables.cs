@@ -1,4 +1,4 @@
-namespace MainBoilerPlate.Utilities
+namespace SimplonHubApi.Utilities
 {
     public static class EnvironmentVariables
     {

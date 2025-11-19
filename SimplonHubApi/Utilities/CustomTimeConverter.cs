@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace MainBoilerPlate.Utilities
+namespace SimplonHubApi.Utilities
 {
     public class CustomDateTimeConversion : ValueConverter<DateTimeOffset, DateTime>
     {

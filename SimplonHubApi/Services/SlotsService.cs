@@ -1,12 +1,12 @@
 using System.Security.Claims;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using SimplonHubApi.Models;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     /// <summary>
     /// Service pour la gestion des créneaux

@@ -1,9 +1,9 @@
-using MainBoilerPlate.Models.Generics;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Models.Generics;
+using SimplonHubApi.Utilities;
 using SimplonHubApi.Models;
 using System.Diagnostics.CodeAnalysis;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class Booking : BaseModel
     {

@@ -1,6 +1,7 @@
-using MainBoilerPlate.Models;
+using SimplonHubApi.Models;
+using SimplonHubApi.Models;
 
-namespace MainBoilerPlate.Templates
+namespace SimplonHubApi.Templates
 {
     public class ResetPasswordModel
     {
@@ -26,6 +27,23 @@ namespace MainBoilerPlate.Templates
         {
             Receiver = receiver;
             ConfirmLink = confirmLink;
+            WebsiteLink = websiteLink;
+        }
+    }
+
+    public class ReminderModel
+    {
+        public UserApp Teacher { get; set; }
+        public UserApp Student { get; set; }
+        public Slot Slot { get; set; }
+        public string WebsiteLink { get; set; }
+        public bool forTeacher { get; set; } = true;
+
+        public ReminderModel(UserApp teacher, UserApp student, Slot slot, string websiteLink)
+        {
+            Teacher = teacher;
+            Student = student;
+            Slot = slot;
             WebsiteLink = websiteLink;
         }
     }

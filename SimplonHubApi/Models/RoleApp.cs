@@ -1,7 +1,7 @@
-using MainBoilerPlate.Models.Generics;
+using SimplonHubApi.Models.Generics;
 using Microsoft.AspNetCore.Identity;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class RoleApp : IdentityRole<Guid>, IArchivable, ICreatable, IUpdateable
     {

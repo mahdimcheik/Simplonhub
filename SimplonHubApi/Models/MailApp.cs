@@ -1,4 +1,4 @@
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class MailApp
     {

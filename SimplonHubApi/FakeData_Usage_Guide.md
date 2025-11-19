@@ -324,7 +324,7 @@ POST /fakedata/all
 
 Si vous souhaitez personnaliser les données générées, modifiez le fichier :
 ```
-MainBoilerPlate/Services/FakeDataService.cs
+SimplonHubApi/Services/FakeDataService.cs
 ```
 
 Vous pouvez ajuster :

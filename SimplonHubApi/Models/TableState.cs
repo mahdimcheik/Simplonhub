@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
 
     public class Sort

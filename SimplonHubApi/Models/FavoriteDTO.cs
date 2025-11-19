@@ -1,4 +1,4 @@
-using MainBoilerPlate.Models;
+using SimplonHubApi.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace SimplonHubApi.Models
@@ -118,7 +118,7 @@ namespace SimplonHubApi.Models
 
         public FavoriteUserDTO() { }
 
-        public FavoriteUserDTO(MainBoilerPlate.Models.UserApp user)
+        public FavoriteUserDTO(SimplonHubApi.Models.UserApp user)
         {
             Id = user.Id;
             FirstName = user.FirstName;

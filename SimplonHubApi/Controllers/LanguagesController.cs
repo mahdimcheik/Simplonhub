@@ -1,12 +1,12 @@
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     /// <summary>
     /// Contrôleur pour la gestion des langues

@@ -1,10 +1,10 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
 
-namespace MainBoilerPlate.Contexts
+namespace SimplonHubApi.Contexts
 {
     public class MainContext : IdentityDbContext<UserApp, RoleApp, Guid>
     {

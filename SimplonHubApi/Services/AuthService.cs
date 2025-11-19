@@ -2,16 +2,16 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Web;
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     /// <summary>
     /// Service d'authentification pour gérer l'inscription, la connexion et les opérations liées aux utilisateurs

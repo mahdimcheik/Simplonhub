@@ -1,13 +1,13 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using SimplonHubApi.Models;
 using System.Security.Claims;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     /// <summary>
     /// Contrôleur pour la gestion des favoris (étudiants → professeurs)

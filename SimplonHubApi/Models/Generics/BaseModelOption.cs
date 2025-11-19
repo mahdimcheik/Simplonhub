@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MainBoilerPlate.Models.Generics
+namespace SimplonHubApi.Models.Generics
 {
     public class BaseModelOption : BaseModel
     {

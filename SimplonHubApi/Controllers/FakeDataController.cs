@@ -1,10 +1,11 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using SimplonHubApi.Templates;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     /// <summary>
     /// Contrôleur pour générer des données fictives de test
@@ -14,7 +15,7 @@ namespace MainBoilerPlate.Controllers
     [Route("[controller]")]
     [ApiController]
     [EnableCors]
-    public class FakeDataController(FakeDataService fakeDataService) : ControllerBase
+    public class FakeDataController(FakeDataService fakeDataService, MailService mailService) : ControllerBase
     {
         /// <summary>
         /// Génère des utilisateurs fictifs avec différents rôles (Admin, Teacher, Student)

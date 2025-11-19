@@ -1,11 +1,9 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using MainBoilerPlate.Models.Generics;
-using MainBoilerPlate.Utilities;
 using Microsoft.AspNetCore.Identity;
-using SimplonHubApi.Models;
+using SimplonHubApi.Models.Generics;
+using SimplonHubApi.Utilities;
+using System.ComponentModel.DataAnnotations;
 
-namespace MainBoilerPlate.Models
+namespace SimplonHubApi.Models
 {
     public class UserApp : IdentityUser<Guid>, IArchivable, IUpdateable, ICreatable
     {
@@ -75,8 +73,8 @@ namespace MainBoilerPlate.Models
         [Required]
         public ICollection<RoleAppResponseDTO> Roles { get; set; }
         public ICollection<LanguageResponseDTO>? Languages { get; set; }
-        public ICollection<ProgrammingLanguageResponseDTO>? ProgrammingLanguages { get; set; } 
-        public ICollection<FormationResponseDTO>? Formations { get; set; } 
+        public ICollection<ProgrammingLanguageResponseDTO>? ProgrammingLanguages { get; set; }
+        public ICollection<FormationResponseDTO>? Formations { get; set; }
 
 
 
@@ -95,13 +93,13 @@ namespace MainBoilerPlate.Models
             DateOfBirth = user.DateOfBirth;
             Formations = user.Formations?.Select(f => new FormationResponseDTO(f)).ToList() ?? null;
             Languages = user.Languages?.Select(l => new LanguageResponseDTO(l)).ToList() ?? null;
-            ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;            
+            ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;
         }
     }
 
     public class TeacherResponseDTO : UserResponseDTO
     {
-        public bool  IsFavorite { get; set; }
+        public bool IsFavorite { get; set; }
 
         public TeacherResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles) : base(user, roles)
         {

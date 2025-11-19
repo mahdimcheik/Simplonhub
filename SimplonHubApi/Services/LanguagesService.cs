@@ -1,8 +1,8 @@
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     /// <summary>
     /// Service pour la gestion des langues

@@ -1,9 +1,9 @@
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-namespace MainBoilerPlate.Utilities
+namespace SimplonHubApi.Utilities
 {
     public class CheckUser
     {

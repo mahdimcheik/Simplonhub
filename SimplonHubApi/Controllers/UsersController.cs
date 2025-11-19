@@ -1,12 +1,13 @@
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using SimplonHubApi.Services;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class UsersController(UsersService usersService) : ControllerBase
+    public class UsersController(UsersService usersService, SchedulerService schedulerService) : ControllerBase
     {
         [HttpPost("list")]
         public async Task<ActionResult<ResponseDTO<List<UserResponseDTO>>>> GetAllUsers([FromBody] DynamicFilters<UserApp> tableState)

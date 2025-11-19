@@ -1,7 +1,7 @@
-using MainBoilerPlate.Contexts;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Services;
-using MainBoilerPlate.Utilities;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MainBoilerPlate.Controllers
+namespace SimplonHubApi.Controllers
 {
     [Produces("application/json")]
     [Consumes("application/json")]

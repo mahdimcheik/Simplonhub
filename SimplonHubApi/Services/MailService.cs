@@ -1,12 +1,12 @@
 using System.Dynamic;
 using System.Net;
 using System.Net.Mail;
-using MainBoilerPlate.Models;
-using MainBoilerPlate.Templates;
-using MainBoilerPlate.Utilities;
 using RazorLight;
+using SimplonHubApi.Models;
+using SimplonHubApi.Templates;
+using SimplonHubApi.Utilities;
 
-namespace MainBoilerPlate.Services
+namespace SimplonHubApi.Services
 {
     public class MailService
     {
@@ -18,7 +18,6 @@ namespace MainBoilerPlate.Services
             _env = env;
             _razorLightEngine = new RazorLightEngineBuilder()
                 .UseFileSystemProject(Path.Combine(Directory.GetCurrentDirectory(), "Templates"))
-                //.UseFileSystemProject(Path.Combine(_env.WebRootPath, "TemplatesInvoice"))
                 .UseMemoryCachingProvider()
                 .Build();
         }
@@ -58,7 +57,10 @@ namespace MainBoilerPlate.Services
                     EnvironmentVariables.API_FRONT_URL
                 );
 
-                string template =  await _razorLightEngine.CompileRenderAsync("ConfirmAccountTemplate.cshtml", model);     
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ConfirmAccountTemplate.cshtml",
+                    model
+                );
 
                 MailApp mailApp = new MailApp
                 {
@@ -86,7 +88,10 @@ namespace MainBoilerPlate.Services
                     EnvironmentVariables.API_FRONT_URL
                 );
 
-                string template = await _razorLightEngine.CompileRenderAsync("ForgotPasswordTemplate.cshtml", model);
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ForgotPasswordTemplate.cshtml",
+                    model
+                );
 
                 MailApp mailApp = new MailApp
                 {
@@ -97,6 +102,34 @@ namespace MainBoilerPlate.Services
                 };
 
                 await SendEmail(mailApp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        public async Task SendReminder(ReminderModel reminder)
+        {
+            try
+            {
+                string template = await _razorLightEngine.CompileRenderAsync(
+                    "ReminderTemplate.cshtml",
+                    reminder
+                );
+
+                MailApp mailApp = new MailApp
+                {
+                    MailFrom = EnvironmentVariables.DO_NO_REPLY_MAIL,
+                    MailTo = reminder.Teacher.Email,
+                    MailSubject = "SimplongHub: Rappel séance",
+                    MailBody = template,
+                };
+
+                if (!reminder.Teacher.Email.Contains("simplon"))
+                {
+                    await SendEmail(mailApp);
+                }
             }
             catch (Exception ex)
             {

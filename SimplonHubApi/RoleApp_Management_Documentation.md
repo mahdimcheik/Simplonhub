@@ -6,12 +6,12 @@ Cette documentation décrit l'implémentation de la gestion des **RoleApp** (Rô
 
 ## 🗂️ Fichiers Créés
 
-### **1. Models & DTOs** - `MainBoilerPlate/Models/RoleAppDTO.cs`
+### **1. Models & DTOs** - `SimplonHubApi/Models/RoleAppDTO.cs`
 - **RoleAppResponseDTO** - DTO pour l'affichage détaillé
 - **RoleAppCreateDTO** - DTO pour la création
 - **RoleAppUpdateDTO** - DTO pour la mise à jour
 
-### **2. Service** - `MainBoilerPlate/Services/RoleAppService.cs`
+### **2. Service** - `SimplonHubApi/Services/RoleAppService.cs`
 - `GetAllRolesAsync()` - Récupère tous les rôles
 - `GetRoleByIdAsync(id)` - Récupère un rôle par ID
 - `GetRoleByNameAsync(name)` - Récupère un rôle par nom
@@ -19,7 +19,7 @@ Cette documentation décrit l'implémentation de la gestion des **RoleApp** (Rô
 - `UpdateRoleAsync(id, dto)` - Met à jour un rôle
 - `GetUsersCountInRoleAsync(roleId)` - Compte les utilisateurs dans un rôle
 
-### **3. Controller** - `MainBoilerPlate/Controllers/RoleAppController.cs`
+### **3. Controller** - `SimplonHubApi/Controllers/RoleAppController.cs`
 - `GET /roleapp/all` - Liste tous les rôles
 - `GET /roleapp/{id}` - Récupère un rôle par ID
 - `GET /roleapp/by-name/{name}` - Récupère un rôle par nom
@@ -27,7 +27,7 @@ Cette documentation décrit l'implémentation de la gestion des **RoleApp** (Rô
 - `PUT /roleapp/update/{id}` - Met à jour un rôle
 - `GET /roleapp/{id}/users-count` - Compte les utilisateurs dans un rôle
 
-### **4. Configuration** - `MainBoilerPlate/Program.cs`
+### **4. Configuration** - `SimplonHubApi/Program.cs`
 - Enregistrement de `RoleAppService` dans le conteneur DI
 
 ---
