@@ -823,7 +823,7 @@ namespace SimplonHubApi.Contexts
 
             // Global Query Filters to exclude soft-deleted entities
             builder.Entity<Booking>().HasQueryFilter(b => b.ArchivedAt != null);
-            builder.Entity<UserApp>().HasQueryFilter(b => b.ArchivedAt != null);
+            //builder.Entity<UserApp>().HasQueryFilter(b => b.ArchivedAt != null);
             builder.Entity<Slot>().HasQueryFilter(b => b.ArchivedAt != null);
         }
 
