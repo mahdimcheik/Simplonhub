@@ -50,9 +50,10 @@ namespace SimplonHubApi.Services
                     s.DateTo < DateTimeOffset.UtcNow && s.DateTo > lastWeek && s.Booking == null
                     || s.Booking.StatusId == HardCode.BOOKING_PENDING
                 )
-                .ToListAsync();
+                .ExecuteUpdateAsync(s => s.SetProperty(s => s.ArchivedAt, DateTime.UtcNow));
+            //.ToListAsync();
 
-            _context.Slots.RemoveRange(oldBookings);
+            //_context.Slots.RemoveRange(oldBookings);
             await _context.SaveChangesAsync();
         }
 
