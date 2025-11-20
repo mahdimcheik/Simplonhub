@@ -279,4 +279,11 @@ namespace SimplonHubApi.Models
         [Required]
         public required UserResponseDTO User { get; set; }
     }
+
+    public class UserPublicReport
+    {
+        public int FreeSlotsCount { get; set; }
+        public int GivenBookingsCount { get; set; }
+        public int StudentsCount { get; set; }
+    }
 }

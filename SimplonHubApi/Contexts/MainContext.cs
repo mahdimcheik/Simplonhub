@@ -780,7 +780,7 @@ namespace SimplonHubApi.Contexts
                 {
                     Id = HardCode.SLOT_TYPE_VISIO,
                     Name = "Visio",
-                    Color = "#ff69b4",
+                    Color = "#f2cec7",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },
@@ -788,7 +788,7 @@ namespace SimplonHubApi.Contexts
                 {
                     Id = HardCode.SLOT_TYPE_PRESENTIAL,
                     Name = "Présentiel",
-                    Color = "#aa69b4",
+                    Color = "#c7f2e9",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },
@@ -810,7 +810,7 @@ namespace SimplonHubApi.Contexts
                 },
                 new StatusBooking
                 {
-                    Id = HardCode.BOOKING__CONFIRMED,
+                    Id = HardCode.BOOKING_CONFIRMED,
                     Name = "confirmed",
                     DisplayName = "Confirmée",
                     Color = "#fa69b4",
@@ -822,9 +822,9 @@ namespace SimplonHubApi.Contexts
             builder.Entity<StatusBooking>().HasData(statusBookings);
 
             // Global Query Filters to exclude soft-deleted entities
-            builder.Entity<Booking>().HasQueryFilter(b => b.ArchivedAt != null);
+            //builder.Entity<Booking>().HasQueryFilter(b => b.ArchivedAt != null);
             //builder.Entity<UserApp>().HasQueryFilter(b => b.ArchivedAt != null);
-            builder.Entity<Slot>().HasQueryFilter(b => b.ArchivedAt != null);
+            //builder.Entity<Slot>().HasQueryFilter(b => b.ArchivedAt != null);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
