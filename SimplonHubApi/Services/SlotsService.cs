@@ -325,7 +325,7 @@ namespace SimplonHubApi.Services
                 };
 
                 context.Slots.Add(slot);
-                await context.SaveChangesAsync();
+                var toto = await context.SaveChangesAsync();
 
                 // Recharger avec les relations
                 var createdSlot = await context
@@ -667,7 +667,7 @@ namespace SimplonHubApi.Services
 
             try
             {
-                existedBooking.StatusId = HardCode.BOOKING__CONFIRMED;
+                existedBooking.StatusId = HardCode.BOOKING_CONFIRMED;
                 await context.SaveChangesAsync();
 
                 return new ResponseDTO<bool>

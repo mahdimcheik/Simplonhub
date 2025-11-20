@@ -268,6 +268,25 @@ namespace SimplonHubApi.Controllers
             return Ok(response);
         }
 
+        /// <summary>
+        /// Get teacher public report
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        [HttpGet("teacher-report")]
+        public async Task<ActionResult<ResponseDTO<UserPublicReport>>> GetTeacherPublicReport(
+            Guid userId
+        )
+        {
+            var response = await authService.GetPublicTeacherReport(userId);
+            if (response.Status >= 400)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+
         #endregion
 
         #region POST AskForPasswordRecoveryMail

@@ -2,13 +2,13 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Web;
-using SimplonHubApi.Contexts;
-using SimplonHubApi.Models;
-using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace SimplonHubApi.Services
@@ -138,13 +138,13 @@ namespace SimplonHubApi.Services
         public async Task<ResponseDTO<UserResponseDTO>> GetPublicInformations(Guid userId)
         {
             var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if(user is null)
+            if (user is null)
             {
                 return new ResponseDTO<UserResponseDTO>
                 {
                     Message = "Demande acceptée",
                     Status = 400,
-                    Data = null
+                    Data = null,
                 };
             }
             var userRoles = await userManager.GetRolesAsync(user);
@@ -155,15 +155,69 @@ namespace SimplonHubApi.Services
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
 
-            return
-                new ResponseDTO<UserResponseDTO>
-                {
-                    Message = "Demande acceptée",
-                    Status = 200,
-                    Data = new UserResponseDTO(user, rolesDetailed),                   
-                };            
+            return new ResponseDTO<UserResponseDTO>
+            {
+                Message = "Demande acceptée",
+                Status = 200,
+                Data = new UserResponseDTO(user, rolesDetailed),
+            };
         }
 
+        public async Task<ResponseDTO<UserPublicReport?>> GetPublicTeacherReport(Guid userId)
+        {
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user is null)
+            {
+                return new ResponseDTO<UserPublicReport?>
+                {
+                    Message = "Demande refusée",
+                    Status = 400,
+                    Data = null,
+                };
+            }
+            var userRoles = await userManager.GetRolesAsync(user);
+            if (!userRoles.Any() || !userRoles.Contains("Teacher"))
+            {
+                return new ResponseDTO<UserPublicReport?>
+                {
+                    Message = "Demande refusée",
+                    Status = 400,
+                    Data = null,
+                };
+            }
+
+            var freeSlotsCount = await context
+                .Slots.Where(s =>
+                    s.Booking == null && s.DateFrom > DateTime.UtcNow && s.TeacherId == userId
+                )
+                .CountAsync();
+
+            var passedYear = DateTime.UtcNow.AddYears(-1);
+            var allBookingPassedYearCount = await context
+                .Bookings.Where(b => b.StatusId == HardCode.BOOKING_CONFIRMED)
+                .Include(b => b.Slot)
+                .Where(b => b.Slot.DateFrom > passedYear && b.Slot.TeacherId == userId)
+                .CountAsync();
+
+            var studentsServed = await context
+                .Bookings.Where(b => b.StatusId == HardCode.BOOKING_CONFIRMED)
+                .Include(b => b.Slot)
+                .Where(b => b.Slot.DateFrom > passedYear && b.Slot.TeacherId == userId)
+                .GroupBy(b => b.StudentId)
+                .CountAsync();
+
+            return new ResponseDTO<UserPublicReport?>
+            {
+                Message = "Demande acceptée",
+                Status = 200,
+                Data = new UserPublicReport
+                {
+                    FreeSlotsCount = freeSlotsCount,
+                    GivenBookingsCount = allBookingPassedYearCount,
+                    StudentsCount = studentsServed,
+                },
+            };
+        }
 
         public async Task<ResponseDTO<bool>> SetStatusConfirmed(Guid UserId)
         {
@@ -172,47 +226,6 @@ namespace SimplonHubApi.Services
             );
             return new ResponseDTO<bool> { Message = "Compte confirmé", Status = 201 };
         }
-
-        /// <summary>
-        /// Renvoie un email de confirmation à l'utilisateur
-        /// </summary>
-        /// <param name="newUser">Utilisateur pour lequel renvoyer l'email</param>
-        /// <returns>Réponse indiquant le succès ou l'échec de l'envoi</returns>
-        /*
-         public async Task<ResponseDTO<UserResponseDTO>> ResendConfirmationMail(UserApp newUser)
-        {
-            try
-            {
-                var confirmationLink = await GenerateAccountConfirmationLink(newUser);
-                await mailService.ScheduleSendConfirmationEmail(
-                    new Mail
-                    {
-                        MailBody = confirmationLink,
-                        MailSubject = "Mail de confirmation",
-                        MailTo = newUser.Email ?? "mahdi.mcheik@hotmail.fr",
-                    },
-                    confirmationLink ?? ""
-                );
-
-                // Retourne une réponse avec le statut déterminé, l'identifiant de l'utilisateur, le message de réponse et le statut complet
-                return new ResponseDTO<UserResponseDTO>
-                {
-                    Message = "Email envoyé",
-                    Status = 201,
-                    Data = newUser.ToUserResponseDTO(),
-                };
-            }
-            catch (Exception e)
-            {
-                // En cas d'exception, afficher la trace et retourner une réponse avec le statut approprié
-                Console.WriteLine(e);
-                return new ResponseDTO<UserResponseDTO>
-                {
-                    Status = 40,
-                    Message = "L'email n'est pas envoyé!!!",
-                };
-            }
-        }*/
 
         /// <summary>
         /// Met à jour les informations d'un utilisateur
@@ -234,7 +247,7 @@ namespace SimplonHubApi.Services
                     Message = "Le compte n'existe pas ou ne correspond pas",
                 };
             }
-            
+
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
@@ -267,7 +280,7 @@ namespace SimplonHubApi.Services
                     var newLanguages = await context
                         .Languages.Where(l => model.LanguagesIds.Contains(l.Id))
                         .ToListAsync();
-                    
+
                     foreach (var language in newLanguages)
                     {
                         userWithLanguages.Languages.Add(language);
@@ -278,9 +291,11 @@ namespace SimplonHubApi.Services
                 if (model.ProgrammingLanguagesIds?.Any() == true)
                 {
                     var newProgrammingLanguages = await context
-                        .ProgrammingLanguages.Where(l => model.ProgrammingLanguagesIds.Contains(l.Id))
+                        .ProgrammingLanguages.Where(l =>
+                            model.ProgrammingLanguagesIds.Contains(l.Id)
+                        )
                         .ToListAsync();
-                    
+
                     foreach (var programmingLanguage in newProgrammingLanguages)
                     {
                         userWithLanguages.ProgrammingLanguages.Add(programmingLanguage);
