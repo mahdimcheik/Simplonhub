@@ -252,7 +252,7 @@ namespace SimplonHubApi.Services
             // SeaweedFS direct access through filer (no S3 auth needed)
             // Format: http://localhost:8888/bucketname/filename
             var filerUrl = _publicUrl.Replace(":8333", ":8888"); // Replace S3 port with Filer port
-            return $"{filerUrl}/{_bucket}/{key}";
+            return $"{filerUrl}/buckets/{_bucket}/{key}";
         }
 
         // ---------------------------------------------------------
@@ -270,7 +270,7 @@ namespace SimplonHubApi.Services
                 
                 // Option 1: Use filer direct access (recommended for simple setup)
                 var filerUrl = _publicUrl.Replace(":8333", ":8888");
-                var directUrl = $"{filerUrl}/{_bucket}/{key}";
+                var directUrl = $"{filerUrl}/buckets/{_bucket}/{key}";
                 
                 _logger.LogInformation($"Generated filer URL: {directUrl}");
                 

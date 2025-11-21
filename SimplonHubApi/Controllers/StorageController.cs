@@ -6,10 +6,14 @@ namespace SimplonHubApi.Controllers
 {
     [ApiController]
     [Route("api/storage")]
+    [Produces("application/json")]
+    [Consumes("application/json")]
     public class StorageController : ControllerBase
     {
         private readonly SeaweedStorageService _storage;
         private readonly ILogger<StorageController> _logger;
+        // Store filename metadata in memory (in production, use a database or Redis)
+        private static readonly Dictionary<string, string> _fileMetadata = new();
 
         public StorageController(SeaweedStorageService storage, ILogger<StorageController> logger)
         {
@@ -52,6 +56,9 @@ namespace SimplonHubApi.Controllers
                 _logger.LogInformation($"Received upload request for file: {file.FileName} ({file.Length} bytes)");
 
                 var key = await _storage.UploadAsync(file);
+                
+                // Store filename metadata
+                _fileMetadata[key] = file.FileName;
 
                 var response = new
                 {
@@ -77,8 +84,11 @@ namespace SimplonHubApi.Controllers
         /// Download/Stream a file from SeaweedFS
         /// </summary>
         /// <param name="key">The file key</param>
+        /// <param name="download">If true, forces download with Content-Disposition attachment (default: true)</param>
         [HttpGet("file/{key}")]
-        public async Task<IActionResult> GetFile(string key)
+        [Produces("application/octet-stream")]
+        [Consumes("application/json")]
+        public async Task<IActionResult> GetFile(string key, [FromQuery] bool download = true)
         {
             try
             {
@@ -89,7 +99,28 @@ namespace SimplonHubApi.Controllers
                     return NotFound(new { error = "File not found", key });
                 }
 
-                return File(result.Value.Stream, result.Value.ContentType);
+                // Get original filename from metadata, or use the key as fallback
+                var fileName = _fileMetadata.TryGetValue(key, out var originalName) 
+                    ? originalName 
+                    : key;
+
+                // Set Content-Disposition header to specify filename
+                if (download)
+                {
+                    // Force download with original filename
+                    Response.Headers.Add("Content-Disposition", $"attachment; filename=\"{fileName}\"");
+                }
+                else
+                {
+                    // Display inline (for images, PDFs, etc.)
+                    Response.Headers.Add("Content-Disposition", $"inline; filename=\"{fileName}\"");
+                }
+
+                // Set additional helpful headers
+                Response.Headers.Add("X-Content-Type-Options", "nosniff");
+                Response.Headers.Add("X-File-Name", fileName);
+
+                return File(result.Value.Stream, result.Value.ContentType, fileName);
             }
             catch (Exception ex)
             {
