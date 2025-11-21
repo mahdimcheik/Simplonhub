@@ -49,5 +49,11 @@ namespace SimplonHubApi.Utilities
         // default admin email and password
         public static string SUPER_ADMIN_EMAIL => GetEnvVar("ADMIN_EMAIL", "super.admin@inspire.fr");
         public static string SUPER_ADMIN_PASSWORD => GetEnvVar("ADMIN_PASSWORD", "SuperPassword123!");
+
+        // seaweedfs / s3
+        public static string S3_SERVICE_URL => GetEnvVar("S3_SERVICE_URL", "http://localhost:8333");
+        public static string S3_ACCESS_KEY => GetEnvVar("S3_ACCESS_KEY", "simplonhub");
+        public static string S3_SECRET_KEY => GetEnvVar("S3_SECRET_KEY", "simplonhub123");
+        public static string S3_BUCKET => GetEnvVar("S3_BUCKET", "simplonhub");
     }
 }

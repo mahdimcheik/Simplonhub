@@ -62,6 +62,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<RoleAppService>();
     services.AddTransient<FavoritesService>();
     services.AddScoped<SchedulerService>();
+    services.AddScoped<SeaweedStorageService>();
 
     services.AddLogging(loggingBuilder =>
     {
