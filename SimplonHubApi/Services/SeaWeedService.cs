@@ -249,7 +249,10 @@ namespace SimplonHubApi.Services
         // ---------------------------------------------------------
         public string GetPublicUrl(string key)
         {
-            return $"{_publicUrl}/{_bucket}/{key}";
+            // SeaweedFS direct access through filer (no S3 auth needed)
+            // Format: http://localhost:8888/bucketname/filename
+            var filerUrl = _publicUrl.Replace(":8333", ":8888"); // Replace S3 port with Filer port
+            return $"{filerUrl}/{_bucket}/{key}";
         }
 
         // ---------------------------------------------------------
@@ -259,24 +262,43 @@ namespace SimplonHubApi.Services
         {
             try
             {
+                // For SeaweedFS, use filer URL for direct access instead of signed S3 URLs
+                // SeaweedFS S3 signed URLs require proper IAM configuration
+                // For development/simple setups, use filer direct access
+                
+                _logger.LogInformation($"Generating URL for key: {key}");
+                
+                // Option 1: Use filer direct access (recommended for simple setup)
+                var filerUrl = _publicUrl.Replace(":8333", ":8888");
+                var directUrl = $"{filerUrl}/{_bucket}/{key}";
+                
+                _logger.LogInformation($"Generated filer URL: {directUrl}");
+                
+                return directUrl;
+                
+                // Option 2: Generate S3 presigned URL (requires proper S3 config)
+                // Uncomment this if you have proper S3 authentication configured:
+                /*
                 var request = new GetPreSignedUrlRequest
                 {
                     BucketName = _bucket,
                     Key = key,
                     Expires = DateTime.UtcNow.AddMinutes(minutes),
-                    Protocol = Protocol.HTTP // or HTTPS depending on your setup
+                    Protocol = _publicUrl.StartsWith("https") ? Protocol.HTTPS : Protocol.HTTP
                 };
 
                 var url = _s3.GetPreSignedURL(request);
-
-                _logger.LogInformation($"Generated signed URL for key: {key}");
-
+                _logger.LogInformation($"Generated signed S3 URL for key: {key}");
                 return url;
+                */
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error generating signed URL: {ex.Message}");
-                throw;
+                _logger.LogError(ex, $"Error generating URL: {ex.Message}");
+                
+                // Fallback to filer URL
+                var filerUrl = _publicUrl.Replace(":8333", ":8888");
+                return $"{filerUrl}/{_bucket}/{key}";
             }
         }
 

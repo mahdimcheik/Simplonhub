@@ -1,0 +1,28 @@
+{
+  "identities": [
+    {
+      "name": "simplonhub",
+      "credentials": [
+        {
+          "accessKey": "simplonhub",
+          "secretKey": "simplonhub123"
+        }
+      ],
+      "actions": [
+        "Read",
+        "Write",
+        "List",
+        "Tagging",
+        "Admin"
+      ]
+    },
+    {
+      "name": "anonymous",
+      "actions": [
+        "Read"
+      ]
+    }
+  ],
+  "allowEmptyFolder": true,
+  "allowDeleteBucketNotEmpty": false
+}
