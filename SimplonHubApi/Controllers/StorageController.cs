@@ -42,6 +42,7 @@ namespace SimplonHubApi.Controllers
         /// </summary>
         /// <param name="file">The file to upload</param>
         [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
         [RequestSizeLimit(100_000_000)] // 100MB limit
         [RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
         public async Task<IActionResult> Upload(IFormFile file)
@@ -79,6 +80,50 @@ namespace SimplonHubApi.Controllers
                 return StatusCode(500, new { error = "Failed to upload file", message = ex.Message });
             }
         }
+        /// <summary>
+        /// Upload a file to SeaweedFS
+        /// </summary>
+        /// <param name="file">The file to upload</param>
+        [HttpPost("upload-pdf")]
+        [RequestSizeLimit(100_000_000)] // 100MB limit
+        [Consumes("multipart/form-data")]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
+        public async Task<IActionResult> UploadPdf(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { error = "No file provided or file is empty" });
+                }
+
+                _logger.LogInformation($"Received upload request for file: {file.FileName} ({file.Length} bytes)");
+
+                var key = await _storage.UploadAsync(file, "pdfs");
+
+                // Store filename metadata
+                _fileMetadata[key] = file.FileName;
+
+                var response = new
+                {
+                    success = true,
+                    key,
+                    fileName = file.FileName,
+                    size = file.Length,
+                    contentType = file.ContentType,
+                    publicUrl = _storage.GetPublicUrl(key),
+                    signedUrl = _storage.GetSignedUrl(key)
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error uploading file: {ex.Message}");
+                return StatusCode(500, new { error = "Failed to upload file", message = ex.Message });
+            }
+        }
+
 
         /// <summary>
         /// Download/Stream a file from SeaweedFS
@@ -92,7 +137,8 @@ namespace SimplonHubApi.Controllers
         {
             try
             {
-                var result = await _storage.ReadAsync(key);
+               var decodedKey = Uri.UnescapeDataString(key);
+                var result = await _storage.ReadAsync(decodedKey);
                 
                 if (result == null)
                 {

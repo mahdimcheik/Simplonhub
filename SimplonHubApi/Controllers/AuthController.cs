@@ -29,6 +29,7 @@ namespace SimplonHubApi.Controllers
         /// </summary>
         private readonly UserManager<UserApp> _userManager;
         private readonly AuthService authService;
+        private readonly SeaweedStorageService storage;
 
         /// <summary>
         /// Constructeur du contrôleur des utilisateurs.
@@ -41,12 +42,14 @@ namespace SimplonHubApi.Controllers
         public AuthController(
             MainContext context,
             UserManager<UserApp> userManager,
-            AuthService authService
+            AuthService authService,
+            SeaweedStorageService storage
         )
         {
             this._context = context;
             this._userManager = userManager;
             this.authService = authService;
+            this.storage = storage;
         }
 
         #endregion
@@ -406,6 +409,62 @@ namespace SimplonHubApi.Controllers
                 Message = "Vous êtes déconnecté",
                 Status = 200
             });
+        }
+        #endregion
+
+        #region avatar
+        /// <summary>
+        /// Upload a file to SeaweedFS
+        /// </summary>
+        /// <param name="file">The file to upload</param>
+        [HttpPost("upload-avatar")]
+        [RequestSizeLimit(100_000_000)] // 100MB limit
+        [Consumes("multipart/form-data")]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
+        public async Task<IActionResult> UploadPdf(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest(new { error = "No file provided or file is empty" });
+                }
+                //verifier si le type est image
+                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" };
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+
+                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (
+                    !allowedMimeTypes.Contains(file.ContentType)
+                    || !allowedExtensions.Contains(fileExtension)
+                )
+                {
+                    return BadRequest( new ResponseDTO<UserResponseDTO>
+                    {
+                        Status = 40,
+                        Message = "le type du ficheir n'est pas autorisé'"
+                    });
+                }
+
+                var key = await storage.UploadAsync(file, "avatars");
+
+                var response = new
+                {
+                    success = true,
+                    key,
+                    fileName = file.FileName,
+                    size = file.Length,
+                    contentType = file.ContentType,
+                    publicUrl = storage.GetPublicUrl(key),
+                    signedUrl = storage.GetSignedUrl(key)
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Failed to upload file", message = ex.Message });
+            }
         }
         #endregion
     }
