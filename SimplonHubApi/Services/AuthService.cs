@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using SimplonHubApi.Contexts;
 using SimplonHubApi.Models;
 using SimplonHubApi.Utilities;
-using static System.Net.Mime.MediaTypeNames;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace SimplonHubApi.Services
 {
@@ -716,6 +718,89 @@ namespace SimplonHubApi.Services
         {
             var existingUser = await userManager.FindByEmailAsync(email);
             return existingUser != null;
+        }
+
+        public async Task<ResponseDTO<UserResponseDTO>> UploadAvatar(
+           IFormFile file,
+           ClaimsPrincipal UserPrincipal,
+           HttpRequest request
+       )
+        {
+            if (file == null)
+            {
+                return new ResponseDTO<UserResponseDTO> { Message = "Aucun fichier téléversé", Status = 400 };
+            }
+            var user = CheckUser.GetUserFromClaim(UserPrincipal, context);
+            if (user is null)
+            {
+                return new ResponseDTO<UserResponseDTO> { Status = 40, Message = "Demande refusée" };
+            }
+            //verifier si le type est image
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (
+                !allowedMimeTypes.Contains(file.ContentType)
+                || !allowedExtensions.Contains(fileExtension)
+            )
+            {
+                return new ResponseDTO<UserResponseDTO>
+                {
+                    Status = 40,
+                    Message = "le type du ficheir n'est pas autorisé'"
+                };
+            }
+
+            // supprimer l' ancien fichier s' il existe
+            var oldFilenameFromDB = Path.GetFileName(user.ImgUrl);
+            if (user.ImgUrl is not null && !oldFilenameFromDB.IsNullOrEmpty())
+            {
+                var uploadFolder = Path.Combine(_env.WebRootPath, "Images");
+
+                // Define the file name using the user's Guid
+
+                var fullFileName = Path.Combine(uploadFolder, oldFilenameFromDB);
+                if (System.IO.File.Exists(fullFileName))
+                {
+                    System.IO.File.Delete(fullFileName);
+                }
+            }
+            //
+
+            using var inputStream = file.OpenReadStream();
+            using var image = await Image.LoadAsync(inputStream);
+
+            image.Mutate(x => x.Resize(new ResizeOptions
+            {
+                Size = new Size(400, 600),
+                Mode = ResizeMode.Max // Garde les proportions
+            }));
+
+            using var outputStream = new MemoryStream();
+            //await image.SaveAsJpegAsync(outputStream, new JpegEncoder { Quality = 85 });
+            await image.SaveAsWebpAsync(outputStream);
+            outputStream.Seek(0, SeekOrigin.Begin);
+
+            string fileName = Guid.NewGuid() + "_avatar.webp";// + Path.GetExtension(file.FileName);
+            var filePath = Path.Combine(_env.WebRootPath, "Images", fileName); // wwwroot + images + filename ???
+
+            using (var stream = System.IO.File.Create(filePath))
+            {
+                await outputStream.CopyToAsync(stream);
+                //await file.CopyToAsync(stream);
+            }
+
+            var url = $"{request.Scheme}://{request.Host}/Images/{fileName}";
+            user.ImgUrl = url;
+            await context.SaveChangesAsync();
+
+            return new ResponseDTO<UserResponseDTO>
+            {
+                Message = "Avatar téléversé",
+                Status = 200,
+                Data = new UserResponseDTO(user, null)
+            };
         }
     }
 }

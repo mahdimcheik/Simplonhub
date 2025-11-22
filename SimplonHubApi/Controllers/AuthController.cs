@@ -1,13 +1,13 @@
-using SimplonHubApi.Contexts;
-using SimplonHubApi.Models;
-using SimplonHubApi.Services;
-using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 
 namespace SimplonHubApi.Controllers
 {
@@ -289,7 +289,6 @@ namespace SimplonHubApi.Controllers
             return Ok(response);
         }
 
-
         #endregion
 
         #region POST AskForPasswordRecoveryMail
@@ -398,74 +397,41 @@ namespace SimplonHubApi.Controllers
         public async Task<ActionResult<ResponseDTO<object?>>> Logout()
         {
             // Récupération de l'email/nom d'utilisateur actuel pour nettoyer les connexions
-            var userEmail = HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ??
-                           HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ??
-                           HttpContext.User?.Identity?.Name;
+            var userEmail =
+                HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                ?? HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                ?? HttpContext.User?.Identity?.Name;
 
             Response.Cookies.Delete("refreshToken");
 
-            return Ok(new ResponseDTO<object>
-            {
-                Message = "Vous êtes déconnecté",
-                Status = 200
-            });
+            return Ok(new ResponseDTO<object> { Message = "Vous êtes déconnecté", Status = 200 });
         }
         #endregion
 
         #region avatar
         /// <summary>
-        /// Upload a file to SeaweedFS
+        /// Télécharge un avatar (image) pour l'utilisateur.
         /// </summary>
-        /// <param name="file">The file to upload</param>
+        /// <param name="file">Fichier de l'avatar.</param>
+        /// <returns>Résultat de l'opération.</returns>
         [HttpPost("upload-avatar")]
-        [RequestSizeLimit(100_000_000)] // 100MB limit
         [Consumes("multipart/form-data")]
-        [RequestFormLimits(MultipartBodyLengthLimit = 100_000_000)]
-        public async Task<IActionResult> UploadPdf(IFormFile file)
+        [Produces("application/json")]
+        public async Task<ActionResult<ResponseDTO<UserResponseDTO>?>> OnPostUploadAsync(IFormFile file)
         {
-            try
+            var result = await authService.UploadAvatar(
+                file,
+                HttpContext.User,
+                HttpContext.Request
+            );
+
+            if (result.Status == 200 || result.Status == 201)
             {
-                if (file == null || file.Length == 0)
-                {
-                    return BadRequest(new { error = "No file provided or file is empty" });
-                }
-                //verifier si le type est image
-                var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" };
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-
-                var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (
-                    !allowedMimeTypes.Contains(file.ContentType)
-                    || !allowedExtensions.Contains(fileExtension)
-                )
-                {
-                    return BadRequest( new ResponseDTO<UserResponseDTO>
-                    {
-                        Status = 40,
-                        Message = "le type du ficheir n'est pas autorisé'"
-                    });
-                }
-
-                var key = await storage.UploadAsync(file, "avatars");
-
-                var response = new
-                {
-                    success = true,
-                    key,
-                    fileName = file.FileName,
-                    size = file.Length,
-                    contentType = file.ContentType,
-                    publicUrl = storage.GetPublicUrl(key),
-                    signedUrl = storage.GetSignedUrl(key)
-                };
-
-                return Ok(response);
+                return Ok(result);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { error = "Failed to upload file", message = ex.Message });
-            }
+            return BadRequest(result);
         }
+
         #endregion
     }
 }

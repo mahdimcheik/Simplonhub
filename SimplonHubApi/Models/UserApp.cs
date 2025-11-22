@@ -14,6 +14,7 @@ namespace SimplonHubApi.Models
         public bool PrivacyPolicyConsent { get; set; } = false;
         public string? Title { get; set; }
         public string? Description { get; set; }
+        public string?  ImgUrl { get; set; }
         public DateTimeOffset? ArchivedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
@@ -66,6 +67,7 @@ namespace SimplonHubApi.Models
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? ImgUrl { get; set; }
 
         public StatusAccountDTO? Status { get; set; }
         public GenderDTO? Gender { get; set; }
@@ -91,6 +93,7 @@ namespace SimplonHubApi.Models
             Description = user.Description;
             PhoneNumber = user.PhoneNumber;
             DateOfBirth = user.DateOfBirth;
+            ImgUrl = user.ImgUrl;
             Formations = user.Formations?.Select(f => new FormationResponseDTO(f)).ToList() ?? null;
             Languages = user.Languages?.Select(l => new LanguageResponseDTO(l)).ToList() ?? null;
             ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;

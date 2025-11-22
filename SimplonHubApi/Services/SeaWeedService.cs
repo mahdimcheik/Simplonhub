@@ -124,13 +124,15 @@ namespace SimplonHubApi.Services
                 );
                 _logger.LogInformation($"Generated key: {key}");
 
-                using var stream = file.OpenReadStream();
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms);
+                ms.Position = 0;
 
                 var request = new PutObjectRequest
                 {
                     BucketName = _bucket,
                     Key = key,
-                    InputStream = stream,
+                    InputStream = ms,
                     ContentType = file.ContentType ?? "application/octet-stream",
                     AutoCloseStream = false,
                     AutoResetStreamPosition = false,
