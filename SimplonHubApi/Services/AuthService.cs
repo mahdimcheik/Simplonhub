@@ -720,7 +720,7 @@ namespace SimplonHubApi.Services
             return existingUser != null;
         }
 
-        public async Task<ResponseDTO<UserResponseDTO>> UploadAvatar(
+        public async Task<ResponseDTO<FileUrl>> UploadAvatar(
            IFormFile file,
            ClaimsPrincipal UserPrincipal,
            HttpRequest request
@@ -728,12 +728,12 @@ namespace SimplonHubApi.Services
         {
             if (file == null)
             {
-                return new ResponseDTO<UserResponseDTO> { Message = "Aucun fichier téléversé", Status = 400 };
+                return new ResponseDTO<FileUrl> { Message = "Aucun fichier téléversé", Status = 400 };
             }
             var user = CheckUser.GetUserFromClaim(UserPrincipal, context);
             if (user is null)
             {
-                return new ResponseDTO<UserResponseDTO> { Status = 40, Message = "Demande refusée" };
+                return new ResponseDTO<FileUrl> { Status = 40, Message = "Demande refusée" };
             }
             //verifier si le type est image
             var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" };
@@ -745,7 +745,7 @@ namespace SimplonHubApi.Services
                 || !allowedExtensions.Contains(fileExtension)
             )
             {
-                return new ResponseDTO<UserResponseDTO>
+                return new ResponseDTO<FileUrl>
                 {
                     Status = 40,
                     Message = "le type du ficheir n'est pas autorisé'"
@@ -795,11 +795,14 @@ namespace SimplonHubApi.Services
             user.ImgUrl = url;
             await context.SaveChangesAsync();
 
-            return new ResponseDTO<UserResponseDTO>
+            return new ResponseDTO<FileUrl>
             {
                 Message = "Avatar téléversé",
                 Status = 200,
-                Data = new UserResponseDTO(user, null)
+                Data = new FileUrl
+                {
+                    Url = url
+                }
             };
         }
     }

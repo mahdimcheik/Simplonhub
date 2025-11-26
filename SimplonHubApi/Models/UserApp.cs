@@ -289,4 +289,7 @@ namespace SimplonHubApi.Models
         public int GivenBookingsCount { get; set; }
         public int StudentsCount { get; set; }
     }
+    public class FileUrl
+    {        public string Url { get; set; }
+    }
 }

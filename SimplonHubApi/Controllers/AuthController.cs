@@ -29,7 +29,7 @@ namespace SimplonHubApi.Controllers
         /// </summary>
         private readonly UserManager<UserApp> _userManager;
         private readonly AuthService authService;
-        private readonly SeaweedStorageService storage;
+        //private readonly SeaweedStorageService storage;
 
         /// <summary>
         /// Constructeur du contrôleur des utilisateurs.
@@ -42,14 +42,14 @@ namespace SimplonHubApi.Controllers
         public AuthController(
             MainContext context,
             UserManager<UserApp> userManager,
-            AuthService authService,
-            SeaweedStorageService storage
+            AuthService authService
         )
+            //SeaweedStorageService storage
         {
             this._context = context;
             this._userManager = userManager;
             this.authService = authService;
-            this.storage = storage;
+            //this.storage = storage;
         }
 
         #endregion
@@ -417,7 +417,7 @@ namespace SimplonHubApi.Controllers
         [HttpPost("upload-avatar")]
         [Consumes("multipart/form-data")]
         [Produces("application/json")]
-        public async Task<ActionResult<ResponseDTO<UserResponseDTO>?>> OnPostUploadAsync(IFormFile file)
+        public async Task<ActionResult<ResponseDTO<FileUrl>?>> OnPostUploadAsync( IFormFile file)
         {
             var result = await authService.UploadAvatar(
                 file,
