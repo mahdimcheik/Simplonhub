@@ -55,5 +55,8 @@ namespace SimplonHubApi.Utilities
         public static string S3_ACCESS_KEY => GetEnvVar("S3_ACCESS_KEY", "simplonhub");
         public static string S3_SECRET_KEY => GetEnvVar("S3_SECRET_KEY", "simplonhub123");
         public static string S3_BUCKET => GetEnvVar("S3_BUCKET", "simplonhub");
+
+        // minio
+        public static string MINIO_BUCKETNAME => GetEnvVar("MINIO_BUCKETNAME", "simplonhub");
     }
 }
