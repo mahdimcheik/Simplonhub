@@ -22,5 +22,11 @@ namespace SimplonHubApi.Controllers
             var users = await usersService.GetTeachers(tableState, User);
             return Ok(users);
         }
+        [HttpPost("list-candidats")]
+        public async Task<ActionResult<ResponseDTO<List<TeacherResponseDTO>>>> GetAllCandidats([FromBody] DynamicFilters<UserApp> tableState)
+        {
+            var users = await usersService.GetCandidats(tableState);
+            return Ok(users);
+        }
     }
 }

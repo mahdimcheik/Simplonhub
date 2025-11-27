@@ -58,5 +58,8 @@ namespace SimplonHubApi.Utilities
 
         // minio
         public static string MINIO_BUCKETNAME => GetEnvVar("MINIO_BUCKETNAME", "simplonhub");
+        public static string MINIO_ENDPOINT => GetEnvVar("MINIO_ENDPOINT", "simplonhub");
+        public static string MINIO_ACCESSKEY => GetEnvVar("MINIO_ACCESSKEY", "minioadmin");
+        public static string MINIO_SECRETKEY => GetEnvVar("MINIO_SECRETKEY", "minioadmin");
     }
 }

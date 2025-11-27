@@ -17,6 +17,7 @@ namespace SimplonHubApi.Utilities
         public static Guid STATUS_PENDING => Guid.Parse("4de5556b-562d-431f-9ff9-d31a5f5cb8c5");
         public static Guid STATUS_CONFIRMED => Guid.Parse("5a5eaf2f-0496-4035-a4b7-9210da39501c");
         public static Guid STATUS_BANNED => Guid.Parse("6ba0a5ed-c7bb-4394-a163-7ed7560b3703");
+        public static Guid STATUS_REJECTED => Guid.Parse("6ba0a5ed-c7bb-4394-a163-7ed7560b3725");
 
         // Statuses Booking
         public static Guid BOOKING_PENDING => Guid.Parse("7de5556b-562d-431f-9ff9-d31a5f5cb8c5");

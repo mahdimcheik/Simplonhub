@@ -1,10 +1,10 @@
 using System.Security.Claims;
-using SimplonHubApi.Contexts;
-using SimplonHubApi.Models;
-using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using SimplonHubApi.Contexts;
 using SimplonHubApi.Models;
+using SimplonHubApi.Models;
+using SimplonHubApi.Utilities;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SimplonHubApi.Services
@@ -12,7 +12,11 @@ namespace SimplonHubApi.Services
     /// <summary>
     /// Service pour la gestion des favoris (étudiants → professeurs)
     /// </summary>
-    public class FavoritesService(MainContext context, UserManager<UserApp> userManager)
+    public class FavoritesService(
+        MainContext context,
+        UserManager<UserApp> userManager,
+        MinioService minioService
+    )
     {
         /// <summary>
         /// Récupère tous les favoris d'un étudiant
@@ -68,6 +72,13 @@ namespace SimplonHubApi.Services
                         includeTeacher: true
                     ))
                     .ToList();
+                foreach (var fav in favoriteDtos)
+                {
+                    if (fav.Teacher.ImgUrl is not null)
+                    {
+                        fav.Teacher.ImgUrl = await minioService.GetFileUrlAsync(fav.Teacher.ImgUrl);
+                    }
+                }
 
                 return new ResponseDTO<List<FavoriteResponseDTO>>
                 {

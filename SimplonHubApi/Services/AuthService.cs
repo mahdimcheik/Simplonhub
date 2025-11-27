@@ -24,6 +24,7 @@ namespace SimplonHubApi.Services
         private readonly UserManager<UserApp> userManager;
         private readonly IWebHostEnvironment _env;
         private readonly MailService mailService;
+        private readonly MinioService minioService;
 
         /// <summary>
         /// Initialise une nouvelle instance du service d'authentification
@@ -35,13 +36,15 @@ namespace SimplonHubApi.Services
             MainContext context,
             UserManager<UserApp> userManager,
             IWebHostEnvironment env,
-            MailService mailService
+            MailService mailService,
+            MinioService minioService
         )
         {
             this.context = context;
             this.userManager = userManager;
             this._env = env;
             this.mailService = mailService;
+            this.minioService = minioService;
         }
 
         /// <summary>
@@ -156,6 +159,8 @@ namespace SimplonHubApi.Services
                 .Where(r => userRoles.Contains(r.Name ?? string.Empty))
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
+
+            user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
 
             return new ResponseDTO<UserResponseDTO>
             {
@@ -398,6 +403,12 @@ namespace SimplonHubApi.Services
                 .Where(r => userRoles.Contains(r.Name ?? string.Empty))
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
+            if (refreshTokenDB.User.ImgUrl is not null)
+            {
+                refreshTokenDB.User.ImgUrl = await minioService.GetFileUrlAsync(
+                    refreshTokenDB.User.ImgUrl
+                );
+            }
 
             return new ResponseDTO<LoginOutputDTO>
             {
@@ -578,6 +589,10 @@ namespace SimplonHubApi.Services
                     ),
                 }
             );
+            if (user.ImgUrl is not null)
+            {
+                user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+            }
 
             return new ResponseDTO<LoginOutputDTO>
             {
@@ -721,22 +736,34 @@ namespace SimplonHubApi.Services
         }
 
         public async Task<ResponseDTO<FileUrl>> UploadAvatar(
-           IFormFile file,
-           ClaimsPrincipal UserPrincipal,
-           HttpRequest request
-       )
+            IFormFile file,
+            ClaimsPrincipal UserPrincipal,
+            HttpRequest request
+        )
         {
             if (file == null)
             {
-                return new ResponseDTO<FileUrl> { Message = "Aucun fichier téléversé", Status = 400 };
+                return new ResponseDTO<FileUrl>
+                {
+                    Message = "Aucun fichier téléversé",
+                    Status = 400,
+                };
             }
             var user = CheckUser.GetUserFromClaim(UserPrincipal, context);
             if (user is null)
             {
                 return new ResponseDTO<FileUrl> { Status = 40, Message = "Demande refusée" };
             }
+
             //verifier si le type est image
-            var allowedMimeTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/bmp", "image/webp" };
+            var allowedMimeTypes = new[]
+            {
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/bmp",
+                "image/webp",
+            };
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
 
             var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
@@ -748,61 +775,42 @@ namespace SimplonHubApi.Services
                 return new ResponseDTO<FileUrl>
                 {
                     Status = 40,
-                    Message = "le type du ficheir n'est pas autorisé'"
+                    Message = "le type du ficheir n'est pas autorisé'",
                 };
             }
 
             // supprimer l' ancien fichier s' il existe
-            var oldFilenameFromDB = Path.GetFileName(user.ImgUrl);
-            if (user.ImgUrl is not null && !oldFilenameFromDB.IsNullOrEmpty())
+            try
             {
-                var uploadFolder = Path.Combine(_env.WebRootPath, "Images");
-
-                // Define the file name using the user's Guid
-
-                var fullFileName = Path.Combine(uploadFolder, oldFilenameFromDB);
-                if (System.IO.File.Exists(fullFileName))
-                {
-                    System.IO.File.Delete(fullFileName);
-                }
+                await minioService.RemoveFileAsync(user.ImgUrl);
             }
-            //
+            catch { }
+            // resize
 
             using var inputStream = file.OpenReadStream();
             using var image = await Image.LoadAsync(inputStream);
 
-            image.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Size = new Size(400, 600),
-                Mode = ResizeMode.Max // Garde les proportions
-            }));
+            image.Mutate(x =>
+                x.Resize(new ResizeOptions { Size = new Size(800, 1200), Mode = ResizeMode.Max })
+            );
 
             using var outputStream = new MemoryStream();
-            //await image.SaveAsJpegAsync(outputStream, new JpegEncoder { Quality = 85 });
             await image.SaveAsWebpAsync(outputStream);
             outputStream.Seek(0, SeekOrigin.Begin);
 
-            string fileName = Guid.NewGuid() + "_avatar.webp";// + Path.GetExtension(file.FileName);
-            var filePath = Path.Combine(_env.WebRootPath, "Images", fileName); // wwwroot + images + filename ???
+            // minio
+            var url = await minioService.UploadFileAsync("avatars", file.FileName, file);
+            user.ImgUrl = url.ObjectName;
 
-            using (var stream = System.IO.File.Create(filePath))
-            {
-                await outputStream.CopyToAsync(stream);
-                //await file.CopyToAsync(stream);
-            }
-
-            var url = $"{request.Scheme}://{request.Host}/Images/{fileName}";
-            user.ImgUrl = url;
             await context.SaveChangesAsync();
+
+            var imgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
 
             return new ResponseDTO<FileUrl>
             {
                 Message = "Avatar téléversé",
                 Status = 200,
-                Data = new FileUrl
-                {
-                    Url = url
-                }
+                Data = new FileUrl { Url = imgUrl },
             };
         }
     }

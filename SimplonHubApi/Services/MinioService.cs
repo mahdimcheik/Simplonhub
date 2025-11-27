@@ -1,5 +1,4 @@
-﻿
-using Minio;
+﻿using Minio;
 using Minio.DataModel.Args;
 using Minio.DataModel.Response;
 using Minio.Exceptions;
@@ -26,13 +25,18 @@ namespace SimplonHubApi.Services
                 .Build();
         }
 
-        public async Task<PutObjectResponse> UploadFileAsync(string objectName, string filePath,
-            Dictionary<string, string> metadata)
+        public async Task<PutObjectResponse> UploadFileAsync(
+            string objectName,
+            string filePath,
+            Dictionary<string, string> metadata
+        )
         {
             var putObjectArgs = new PutObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
-                .WithFileName(filePath).WithContentType(metadata["Content-Type"]).WithHeaders(metadata);
+                .WithFileName(filePath)
+                .WithContentType(metadata["Content-Type"])
+                .WithHeaders(metadata);
 
             return await _minioClient.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
         }
@@ -69,11 +73,19 @@ namespace SimplonHubApi.Services
 
         public async Task DownloadFileAsync(string objectName, string downloadFilePath)
         {
-            using var fileStream = new FileStream(downloadFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+            using var fileStream = new FileStream(
+                downloadFilePath,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None
+            );
             var getObjectArgs = new GetObjectArgs()
                 .WithBucket(bucketName)
                 .WithObject(objectName)
-                .WithCallbackStream(async stream => { await stream.CopyToAsync(fileStream); });
+                .WithCallbackStream(async stream =>
+                {
+                    await stream.CopyToAsync(fileStream);
+                });
 
             await _minioClient.GetObjectAsync(getObjectArgs);
         }
@@ -86,7 +98,11 @@ namespace SimplonHubApi.Services
             await _minioClient.RemoveObjectAsync(removeObjectArgs).ConfigureAwait(false);
         }
 
-        public async Task<PutObjectResponse> UploadFileAsync(string path, string NewFileName, IFormFile file)
+        public async Task<PutObjectResponse> UploadFileAsync(
+            string path,
+            string NewFileName,
+            IFormFile file
+        )
         {
             var filePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             using (var stream = new FileStream(filePath, FileMode.Create))
@@ -95,10 +111,10 @@ namespace SimplonHubApi.Services
             }
 
             var metadata = new Dictionary<string, string>
-        {
-            { "Content-Type", file.ContentType },
-            { "x-amz-meta-content-disposition", "inline" }
-        };
+            {
+                { "Content-Type", file.ContentType },
+                { "x-amz-meta-content-disposition", "inline" },
+            };
 
             return await UploadFileAsync($"{path}/{NewFileName}", filePath, metadata);
         }
@@ -122,16 +138,22 @@ namespace SimplonHubApi.Services
             return allFilenames;
         }
 
-        public async Task<List<FileInfoResponse>> GetAllFiles(Guid id, string modelName, string type)
+        public async Task<List<FileInfoResponse>> GetAllFiles(
+            Guid id,
+            string modelName,
+            string type
+        )
         {
             var minioFiles = await ListAllFiles($"{modelName}/{type}/{id}");
             List<FileInfoResponse> minioFileInfos = [];
             foreach (var minioFile in minioFiles)
-                minioFileInfos.Add(new FileInfoResponse
-                {
-                    Name = minioFile,
-                    Url = await GetFileUrlAsync($"{modelName}/{type}/{id}/{minioFile}")
-                });
+                minioFileInfos.Add(
+                    new FileInfoResponse
+                    {
+                        Name = minioFile,
+                        Url = await GetFileUrlAsync($"{modelName}/{type}/{id}/{minioFile}"),
+                    }
+                );
             return minioFileInfos;
         }
 
@@ -150,12 +172,17 @@ namespace SimplonHubApi.Services
                 // Extraire le nom du fichier depuis le chemin complet
                 var fileName = Path.GetFileName(obj.Key);
 
-                fileInfos.Add(new FileInfoResponse
-                {
-                    Name = fileName,
-                    Url = await GetFileUrlAsync(obj.Key),
-                    UploadDate = obj.LastModified != null ? DateTimeOffset.Parse(obj.LastModified) : null
-                });
+                fileInfos.Add(
+                    new FileInfoResponse
+                    {
+                        Name = fileName,
+                        Url = await GetFileUrlAsync(obj.Key),
+                        UploadDate =
+                            obj.LastModified != null
+                                ? DateTimeOffset.Parse(obj.LastModified)
+                                : null,
+                    }
+                );
             }
 
             return fileInfos;
@@ -165,12 +192,13 @@ namespace SimplonHubApi.Services
         {
             var minioFiles = await ListAllFiles($"{modelName}/{type}/{id}");
 
-            if (minioFiles.Count == 0) return null;
+            if (minioFiles.Count == 0)
+                return null;
 
             return new FileInfoResponse
             {
                 Name = minioFiles[0],
-                Url = await GetFileUrlAsync($"{modelName}/{type}/{id}/{minioFiles[0]}")
+                Url = await GetFileUrlAsync($"{modelName}/{type}/{id}/{minioFiles[0]}"),
             };
         }
     }

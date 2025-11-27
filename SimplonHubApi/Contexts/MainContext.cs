@@ -1,9 +1,9 @@
+using System.Reflection.Emit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
 using SimplonHubApi.Models;
 using SimplonHubApi.Utilities;
-using System.Reflection.Emit;
 
 namespace SimplonHubApi.Contexts
 {
@@ -618,6 +618,14 @@ namespace SimplonHubApi.Contexts
                     Id = HardCode.STATUS_BANNED,
                     Name = "Banned",
                     Color = "#ab69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new StatusAccount
+                {
+                    Id = HardCode.STATUS_REJECTED,
+                    Name = "Rejected",
+                    Color = "#8999b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },
