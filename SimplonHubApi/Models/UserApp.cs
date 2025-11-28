@@ -53,7 +53,7 @@ namespace SimplonHubApi.Models
 
     }
 
-    public class UserResponseDTO
+    public class UserResponseDTO : ICreatable
     {
         [Required]
         public Guid Id { get; set; }
@@ -71,14 +71,13 @@ namespace SimplonHubApi.Models
 
         public StatusAccountDTO? Status { get; set; }
         public GenderDTO? Gender { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         [Required]
         public ICollection<RoleAppResponseDTO> Roles { get; set; }
         public ICollection<LanguageResponseDTO>? Languages { get; set; }
         public ICollection<ProgrammingLanguageResponseDTO>? ProgrammingLanguages { get; set; }
         public ICollection<FormationResponseDTO>? Formations { get; set; }
-
-
 
         public UserResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles)
         {
@@ -97,6 +96,7 @@ namespace SimplonHubApi.Models
             Formations = user.Formations?.Select(f => new FormationResponseDTO(f)).ToList() ?? null;
             Languages = user.Languages?.Select(l => new LanguageResponseDTO(l)).ToList() ?? null;
             ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;
+            CreatedAt = user.CreatedAt;
         }
     }
 
@@ -106,7 +106,7 @@ namespace SimplonHubApi.Models
 
         public TeacherResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles) : base(user, roles)
         {
-            IsFavorite = user.FanStudents.Count > 0;
+            IsFavorite = user.FanStudents?.Count > 0;
         }
     }
     /// <summary>

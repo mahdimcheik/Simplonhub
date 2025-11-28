@@ -160,7 +160,10 @@ namespace SimplonHubApi.Services
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
 
-            user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+            if (user.ImgUrl is not null)
+            {
+                user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+            }
 
             return new ResponseDTO<UserResponseDTO>
             {
