@@ -49,5 +49,10 @@ namespace SimplonHubApi.Utilities
         // type slots
         public static Guid SLOT_TYPE_VISIO => Guid.Parse("99e5556b-562d-431f-9ff9-d31a5f5cb8c5");
         public static Guid SLOT_TYPE_PRESENTIAL => Guid.Parse("0aaeaf2f-0496-4035-a4b7-9210da39501c");
+
+        // documents type
+        public static Guid TYPE_DOCUMENT_CG => Guid.Parse("99e5556b-562d-431f-9ff9-d31a5f5cb8c5");
+        public static Guid TYPE_DOCUMENT_PI => Guid.Parse("0aaeaf2f-0496-4035-a4b7-9210da39501c");
+        public static Guid TYPE_DOCUMENT_DIPLOME => Guid.Parse("77a0a5ed-c7bb-4394-a163-7ed7560b3703");
     }
 }
