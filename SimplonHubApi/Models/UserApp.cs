@@ -51,6 +51,9 @@ namespace SimplonHubApi.Models
         public ICollection<Favorite> FavoriteTeachers { get; set; }
         public ICollection<Favorite> FanStudents { get; set; }
 
+        // documents
+        public ICollection<Document> Documents { get; set; }
+
     }
 
     public class UserResponseDTO : ICreatable

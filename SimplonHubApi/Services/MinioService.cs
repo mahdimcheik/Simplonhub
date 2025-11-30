@@ -98,6 +98,36 @@ namespace SimplonHubApi.Services
             await _minioClient.RemoveObjectAsync(removeObjectArgs).ConfigureAwait(false);
         }
 
+        public async Task<PutObjectResponse> UploadPDFAsync(
+            string path,
+            string NewFileName,
+            IFormFile file
+        )
+        {
+            // check if the file is a PDF
+            if (file.ContentType != "application/pdf")
+            {
+                throw new ArgumentException("Le fichier n' est pas un pdf", nameof(file));
+            }
+
+            return await UploadFileAsync(path, NewFileName, file);
+        }
+
+        public async Task<PutObjectResponse> UploadImageAsync(
+            string path,
+            string NewFileName,
+            IFormFile file
+        )
+        {
+            // check if the file is an image
+            if (file.ContentType != "image/*")
+            {
+                throw new ArgumentException("Le fichier n' est pas une image", nameof(file));
+            }
+
+            return await UploadFileAsync(path, NewFileName, file);
+        }
+
         public async Task<PutObjectResponse> UploadFileAsync(
             string path,
             string NewFileName,

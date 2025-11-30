@@ -32,6 +32,9 @@ namespace SimplonHubApi.Contexts
         public DbSet<CategoryCursus> CategoryCursuses { get; set; }
         public DbSet<Cursus> Cursuses { get; set; }
 
+        // documents
+        public DbSet<Document> Documents { get; set; }
+
         public MainContext(DbContextOptions options)
             : base(options) { }
 
@@ -430,6 +433,19 @@ namespace SimplonHubApi.Contexts
                             .HasForeignKey("UserId")
                             .OnDelete(DeleteBehavior.Restrict)
                 );
+
+            builder
+                .Entity<UserApp>()
+                .HasMany(u => u.Documents)
+                .WithOne(d => d.Owner)
+                .HasForeignKey(f => f.OwnerId);
+
+            // documents
+            builder
+                .Entity<Document>()
+                .HasOne(d => d.Admin)
+                .WithMany()
+                .HasForeignKey(d => d.AdminId);
 
             // Favorites - Student adds Teacher to favorites
             builder

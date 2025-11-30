@@ -62,6 +62,7 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<FavoritesService>();
     services.AddScoped<SchedulerService>();
     services.AddTransient<MinioService>();
+    services.AddTransient<DocumentService>();
     //services.AddScoped<SeaweedStorageService>();
 
     services.AddLogging(loggingBuilder =>
