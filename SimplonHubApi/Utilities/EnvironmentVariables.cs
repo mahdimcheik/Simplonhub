@@ -32,9 +32,9 @@ namespace SimplonHubApi.Utilities
         // DATABASE
         public static string DB_PORT => GetEnvVar("DB_PORT", "5432");
         public static string DB_HOST => GetEnvVar("DB_HOST", "localhost");
-        public static string DB_NAME => GetEnvVar("DB_NAME", "mainDB");
+        public static string DB_NAME => GetEnvVar("DB_NAME", "simplonHubDB");
         public static string DB_USER => GetEnvVar("DB_USER", "postgres");
-        public static string DB_PASSWORD => GetEnvVar("DB_PASSWORD", "beecoming");
+        public static string DB_PASSWORD => GetEnvVar("DB_PASSWORD", "postgres");
 
         // auth
         public static int COOKIES_VALIDITY_DAYS => GetEnvVarInt("COOKIES_VALIDITY_DAYS", 7);
@@ -45,9 +45,9 @@ namespace SimplonHubApi.Utilities
         public static int SMTP_PORT => GetEnvVarInt("SMTP_PORT", 543);
         public static string SMTP_LOGIN => GetEnvVar("SMTP_LOGIN", "");
         public static string SMTP_KEY => GetEnvVar("SMTP_KEY", "");
-        public static string DO_NO_REPLY_MAIL => GetEnvVar("DO_NO_REPLY_MAIL", "do-not-reply@inspire.fr");
+        public static string DO_NO_REPLY_MAIL => GetEnvVar("DO_NO_REPLY_MAIL", "do-not-reply@simplonhub.co");
         // default admin email and password
-        public static string SUPER_ADMIN_EMAIL => GetEnvVar("ADMIN_EMAIL", "super.admin@inspire.fr");
+        public static string SUPER_ADMIN_EMAIL => GetEnvVar("ADMIN_EMAIL", "super.admin@simplonhub.co");
         public static string SUPER_ADMIN_PASSWORD => GetEnvVar("ADMIN_PASSWORD", "SuperPassword123!");
 
         // seaweedfs / s3
@@ -58,7 +58,7 @@ namespace SimplonHubApi.Utilities
 
         // minio
         public static string MINIO_BUCKETNAME => GetEnvVar("MINIO_BUCKETNAME", "simplonhub");
-        public static string MINIO_ENDPOINT => GetEnvVar("MINIO_ENDPOINT", "simplonhub");
+        public static string MINIO_ENDPOINT => GetEnvVar("MINIO_ENDPOINT", "127.0.0.1:9000");
         public static string MINIO_ACCESSKEY => GetEnvVar("MINIO_ACCESSKEY", "minioadmin");
         public static string MINIO_SECRETKEY => GetEnvVar("MINIO_SECRETKEY", "minioadmin");
     }
