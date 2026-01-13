@@ -1,4 +1,3 @@
-using System.Text;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,8 +10,8 @@ using Npgsql;
 using SimplonHubApi.Contexts;
 using SimplonHubApi.Models;
 using SimplonHubApi.Services;
-using SimplonHubApi.Services;
 using SimplonHubApi.Utilities;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +61,9 @@ static void ConfigureServices(IServiceCollection services)
     services.AddTransient<RoleAppService>();
     services.AddTransient<FavoritesService>();
     services.AddScoped<SchedulerService>();
+    services.AddTransient<MinioService>();
+    services.AddTransient<DocumentService>();
+    //services.AddScoped<SeaweedStorageService>();
 
     services.AddLogging(loggingBuilder =>
     {

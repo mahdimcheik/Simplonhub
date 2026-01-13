@@ -14,6 +14,7 @@ namespace SimplonHubApi.Models
         public bool PrivacyPolicyConsent { get; set; } = false;
         public string? Title { get; set; }
         public string? Description { get; set; }
+        public string?  ImgUrl { get; set; }
         public DateTimeOffset? ArchivedAt { get; set; }
         public DateTimeOffset? UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTimeOffset CreatedAt { get; set; } = DateTime.UtcNow;
@@ -50,9 +51,12 @@ namespace SimplonHubApi.Models
         public ICollection<Favorite> FavoriteTeachers { get; set; }
         public ICollection<Favorite> FanStudents { get; set; }
 
+        // documents
+        public ICollection<Document> Documents { get; set; }
+
     }
 
-    public class UserResponseDTO
+    public class UserResponseDTO : ICreatable
     {
         [Required]
         public Guid Id { get; set; }
@@ -66,17 +70,17 @@ namespace SimplonHubApi.Models
         public string? Title { get; set; }
         public string? Description { get; set; }
         public string? PhoneNumber { get; set; }
+        public string? ImgUrl { get; set; }
 
         public StatusAccountDTO? Status { get; set; }
         public GenderDTO? Gender { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
 
         [Required]
         public ICollection<RoleAppResponseDTO> Roles { get; set; }
         public ICollection<LanguageResponseDTO>? Languages { get; set; }
         public ICollection<ProgrammingLanguageResponseDTO>? ProgrammingLanguages { get; set; }
         public ICollection<FormationResponseDTO>? Formations { get; set; }
-
-
 
         public UserResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles)
         {
@@ -91,9 +95,11 @@ namespace SimplonHubApi.Models
             Description = user.Description;
             PhoneNumber = user.PhoneNumber;
             DateOfBirth = user.DateOfBirth;
+            ImgUrl = user.ImgUrl;
             Formations = user.Formations?.Select(f => new FormationResponseDTO(f)).ToList() ?? null;
             Languages = user.Languages?.Select(l => new LanguageResponseDTO(l)).ToList() ?? null;
             ProgrammingLanguages = user.ProgrammingLanguages?.Select(pl => new ProgrammingLanguageResponseDTO(pl)).ToList() ?? null;
+            CreatedAt = user.CreatedAt;
         }
     }
 
@@ -103,7 +109,7 @@ namespace SimplonHubApi.Models
 
         public TeacherResponseDTO(UserApp user, List<RoleAppResponseDTO>? roles) : base(user, roles)
         {
-            IsFavorite = user.FanStudents.Count > 0;
+            IsFavorite = user.FanStudents?.Count > 0;
         }
     }
     /// <summary>
@@ -285,5 +291,8 @@ namespace SimplonHubApi.Models
         public int FreeSlotsCount { get; set; }
         public int GivenBookingsCount { get; set; }
         public int StudentsCount { get; set; }
+    }
+    public class FileUrl
+    {        public string Url { get; set; }
     }
 }

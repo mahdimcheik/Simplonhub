@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SimplonHubApi.Contexts;
@@ -11,9 +12,11 @@ using SimplonHubApi.Contexts;
 namespace SimplonHubApi.Migrations
 {
     [DbContext(typeof(MainContext))]
-    partial class MainContextModelSnapshot : ModelSnapshot
+    [Migration("20251130124428_typedocument")]
+    partial class typedocument
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -289,7 +292,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("cde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3112),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8804),
                             Icon = "",
                             Name = "Soft skills"
                         },
@@ -297,7 +300,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("da5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3116),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8808),
                             Icon = "",
                             Name = "Technics"
                         },
@@ -305,7 +308,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("eba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3119),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8810),
                             Icon = "",
                             Name = "Front-end"
                         },
@@ -313,7 +316,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("f1f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3121),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8812),
                             Icon = "",
                             Name = "Back-end"
                         });
@@ -597,7 +600,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("2a5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2933),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8670),
                             Icon = "",
                             Name = "Female"
                         },
@@ -605,7 +608,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("1de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2938),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8675),
                             Icon = "",
                             Name = "Male"
                         },
@@ -613,7 +616,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("3ba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2942),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8677),
                             Icon = "",
                             Name = "Other"
                         });
@@ -659,7 +662,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("11e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3165),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8845),
                             Icon = "",
                             Name = "French"
                         },
@@ -667,7 +670,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("022eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3169),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8849),
                             Icon = "",
                             Name = "English"
                         },
@@ -675,7 +678,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("33a0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3171),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8851),
                             Icon = "",
                             Name = "Arab"
                         },
@@ -683,7 +686,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("44f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3174),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8854),
                             Icon = "",
                             Name = "Spanich"
                         });
@@ -729,7 +732,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("9de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3030),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8765),
                             Icon = "",
                             Name = "Beginner"
                         },
@@ -737,7 +740,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("aa5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3067),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8768),
                             Icon = "",
                             Name = "Intermediate"
                         },
@@ -745,7 +748,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("bba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3070),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8772),
                             Icon = "",
                             Name = "Advanced"
                         });
@@ -843,7 +846,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("55e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3207),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8886),
                             Icon = "",
                             Name = "JavaScript"
                         },
@@ -851,7 +854,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("066eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3210),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8890),
                             Icon = "",
                             Name = "Java"
                         },
@@ -859,7 +862,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("77a0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3213),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8892),
                             Icon = "",
                             Name = "C#"
                         },
@@ -867,7 +870,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("88f1f997-c392-4aac-bef0-fc8acaf109ec"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3215),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8894),
                             Icon = "",
                             Name = "C++"
                         });
@@ -951,7 +954,7 @@ namespace SimplonHubApi.Migrations
                         new
                         {
                             Id = new Guid("bde5556b-562d-431f-9ff9-d31a5f5cb8c5"),
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2777),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8563),
                             DisplayName = "Super Administrateur",
                             Name = "SuperAdmin",
                             NormalizedName = "SUPERADMIN"
@@ -959,7 +962,7 @@ namespace SimplonHubApi.Migrations
                         new
                         {
                             Id = new Guid("4a5eaf2f-0496-4035-a4b7-9210da39501c"),
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2789),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8576),
                             DisplayName = "Administrateur",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
@@ -967,7 +970,7 @@ namespace SimplonHubApi.Migrations
                         new
                         {
                             Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b3703"),
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2793),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8580),
                             DisplayName = "Professeur",
                             Name = "Teacher",
                             NormalizedName = "TEACHER"
@@ -975,7 +978,7 @@ namespace SimplonHubApi.Migrations
                         new
                         {
                             Id = new Guid("87a0a5ed-c7bb-4394-a163-7ed7560b4a01"),
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2795),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8582),
                             DisplayName = "Elève",
                             Name = "Student",
                             NormalizedName = "STUDENT"
@@ -1061,7 +1064,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("4de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2982),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8723),
                             Icon = "",
                             Name = "Pending"
                         },
@@ -1069,7 +1072,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("5a5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2986),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8728),
                             Icon = "",
                             Name = "Confirmed"
                         },
@@ -1077,7 +1080,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("6ba0a5ed-c7bb-4394-a163-7ed7560b3703"),
                             Color = "#ab69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2988),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8730),
                             Icon = "",
                             Name = "Banned"
                         },
@@ -1085,7 +1088,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("6ba0a5ed-c7bb-4394-a163-7ed7560b3725"),
                             Color = "#8999b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(2991),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8733),
                             Icon = "",
                             Name = "Rejected"
                         });
@@ -1137,7 +1140,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("7de5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3285),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8959),
                             DisplayName = "En Attente",
                             Icon = "",
                             Name = "waiting"
@@ -1146,7 +1149,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("8a5eaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3289),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8963),
                             DisplayName = "Confirmée",
                             Icon = "",
                             Name = "confirmed"
@@ -1182,32 +1185,6 @@ namespace SimplonHubApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TypeDocuments");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("0aaeaf2f-0496-4035-a4b7-9210da39501c"),
-                            Color = "#ff69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3323),
-                            Icon = "",
-                            Name = "PI"
-                        },
-                        new
-                        {
-                            Id = new Guid("99e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
-                            Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3327),
-                            Icon = "",
-                            Name = "CG"
-                        },
-                        new
-                        {
-                            Id = new Guid("77a0a5ed-c7bb-4394-a163-7ed7560b3703"),
-                            Color = "#fa69b4",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3329),
-                            Icon = "",
-                            Name = "Diplome"
-                        });
                 });
 
             modelBuilder.Entity("SimplonHubApi.Models.TypeSlot", b =>
@@ -1250,7 +1227,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("99e5556b-562d-431f-9ff9-d31a5f5cb8c5"),
                             Color = "#f2cec7",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3247),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8924),
                             Icon = "",
                             Name = "Visio"
                         },
@@ -1258,7 +1235,7 @@ namespace SimplonHubApi.Migrations
                         {
                             Id = new Guid("0aaeaf2f-0496-4035-a4b7-9210da39501c"),
                             Color = "#c7f2e9",
-                            CreatedAt = new DateTime(2025, 11, 30, 12, 53, 55, 327, DateTimeKind.Utc).AddTicks(3251),
+                            CreatedAt = new DateTime(2025, 11, 30, 12, 44, 27, 678, DateTimeKind.Utc).AddTicks(8928),
                             Icon = "",
                             Name = "Présentiel"
                         });

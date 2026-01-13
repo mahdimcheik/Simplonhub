@@ -1,9 +1,10 @@
+using System.Reflection.Emit;
+using Bogus;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Models;
 using SimplonHubApi.Models;
 using SimplonHubApi.Utilities;
-using System.Reflection.Emit;
 
 namespace SimplonHubApi.Contexts
 {
@@ -31,6 +32,10 @@ namespace SimplonHubApi.Contexts
         public DbSet<LevelCursus> LevelCursuses { get; set; }
         public DbSet<CategoryCursus> CategoryCursuses { get; set; }
         public DbSet<Cursus> Cursuses { get; set; }
+
+        // documents
+        public DbSet<Document> Documents { get; set; }
+        public DbSet<TypeDocument> TypeDocuments { get; set; }
 
         public MainContext(DbContextOptions options)
             : base(options) { }
@@ -431,6 +436,20 @@ namespace SimplonHubApi.Contexts
                             .OnDelete(DeleteBehavior.Restrict)
                 );
 
+            builder
+                .Entity<UserApp>()
+                .HasMany(u => u.Documents)
+                .WithOne(d => d.Owner)
+                .HasForeignKey(f => f.OwnerId);
+
+            // documents
+            builder
+                .Entity<Document>()
+                .HasOne(d => d.Admin)
+                .WithMany()
+                .HasForeignKey(d => d.AdminId);
+            builder.Entity<Document>().HasOne(d => d.Type).WithMany().HasForeignKey(d => d.TypeId);
+
             // Favorites - Student adds Teacher to favorites
             builder
                 .Entity<Favorite>()
@@ -618,6 +637,14 @@ namespace SimplonHubApi.Contexts
                     Id = HardCode.STATUS_BANNED,
                     Name = "Banned",
                     Color = "#ab69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new StatusAccount
+                {
+                    Id = HardCode.STATUS_REJECTED,
+                    Name = "Rejected",
+                    Color = "#8999b4",
                     Icon = "",
                     CreatedAt = DateTime.UtcNow,
                 },
@@ -820,6 +847,37 @@ namespace SimplonHubApi.Contexts
             };
 
             builder.Entity<StatusBooking>().HasData(statusBookings);
+
+            // seed document types
+            List<TypeDocument> typedocuments = new()
+            {
+                new TypeDocument
+                {
+                    Id = HardCode.TYPE_DOCUMENT_PI,
+                    Name = "PI",
+                    Color = "#ff69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new TypeDocument
+                {
+                    Id = HardCode.TYPE_DOCUMENT_CG,
+                    Name = "CG",
+                    Color = "#fa69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new TypeDocument
+                {
+                    Id = HardCode.TYPE_DOCUMENT_DIPLOME,
+                    Name = "Diplome",
+                    Color = "#fa69b4",
+                    Icon = "",
+                    CreatedAt = DateTime.UtcNow,
+                },
+            };
+
+            builder.Entity<TypeDocument>().HasData(typedocuments);
 
             // Global Query Filters to exclude soft-deleted entities
             //builder.Entity<Booking>().HasQueryFilter(b => b.ArchivedAt != null);

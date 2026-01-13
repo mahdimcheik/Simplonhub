@@ -9,7 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using SimplonHubApi.Contexts;
 using SimplonHubApi.Models;
 using SimplonHubApi.Utilities;
-using static System.Net.Mime.MediaTypeNames;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace SimplonHubApi.Services
 {
@@ -22,6 +24,7 @@ namespace SimplonHubApi.Services
         private readonly UserManager<UserApp> userManager;
         private readonly IWebHostEnvironment _env;
         private readonly MailService mailService;
+        private readonly MinioService minioService;
 
         /// <summary>
         /// Initialise une nouvelle instance du service d'authentification
@@ -33,13 +36,15 @@ namespace SimplonHubApi.Services
             MainContext context,
             UserManager<UserApp> userManager,
             IWebHostEnvironment env,
-            MailService mailService
+            MailService mailService,
+            MinioService minioService
         )
         {
             this.context = context;
             this.userManager = userManager;
             this._env = env;
             this.mailService = mailService;
+            this.minioService = minioService;
         }
 
         /// <summary>
@@ -154,6 +159,11 @@ namespace SimplonHubApi.Services
                 .Where(r => userRoles.Contains(r.Name ?? string.Empty))
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
+
+            if (user.ImgUrl is not null)
+            {
+                user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+            }
 
             return new ResponseDTO<UserResponseDTO>
             {
@@ -396,6 +406,12 @@ namespace SimplonHubApi.Services
                 .Where(r => userRoles.Contains(r.Name ?? string.Empty))
                 .Select(r => new RoleAppResponseDTO(r))
                 .ToList();
+            if (refreshTokenDB.User.ImgUrl is not null)
+            {
+                refreshTokenDB.User.ImgUrl = await minioService.GetFileUrlAsync(
+                    refreshTokenDB.User.ImgUrl
+                );
+            }
 
             return new ResponseDTO<LoginOutputDTO>
             {
@@ -576,6 +592,10 @@ namespace SimplonHubApi.Services
                     ),
                 }
             );
+            if (user.ImgUrl is not null)
+            {
+                user.ImgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+            }
 
             return new ResponseDTO<LoginOutputDTO>
             {
@@ -716,6 +736,85 @@ namespace SimplonHubApi.Services
         {
             var existingUser = await userManager.FindByEmailAsync(email);
             return existingUser != null;
+        }
+
+        public async Task<ResponseDTO<FileUrl>> UploadAvatar(
+            IFormFile file,
+            ClaimsPrincipal UserPrincipal,
+            HttpRequest request
+        )
+        {
+            if (file == null)
+            {
+                return new ResponseDTO<FileUrl>
+                {
+                    Message = "Aucun fichier téléversé",
+                    Status = 400,
+                };
+            }
+            var user = CheckUser.GetUserFromClaim(UserPrincipal, context);
+            if (user is null)
+            {
+                return new ResponseDTO<FileUrl> { Status = 40, Message = "Demande refusée" };
+            }
+
+            //verifier si le type est image
+            var allowedMimeTypes = new[]
+            {
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/bmp",
+                "image/webp",
+            };
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+
+            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (
+                !allowedMimeTypes.Contains(file.ContentType)
+                || !allowedExtensions.Contains(fileExtension)
+            )
+            {
+                return new ResponseDTO<FileUrl>
+                {
+                    Status = 40,
+                    Message = "le type du ficheir n'est pas autorisé'",
+                };
+            }
+
+            // supprimer l' ancien fichier s' il existe
+            try
+            {
+                await minioService.RemoveFileAsync(user.ImgUrl);
+            }
+            catch { }
+            // resize
+
+            using var inputStream = file.OpenReadStream();
+            using var image = await Image.LoadAsync(inputStream);
+
+            image.Mutate(x =>
+                x.Resize(new ResizeOptions { Size = new Size(800, 1200), Mode = ResizeMode.Max })
+            );
+
+            using var outputStream = new MemoryStream();
+            await image.SaveAsWebpAsync(outputStream);
+            outputStream.Seek(0, SeekOrigin.Begin);
+
+            // minio
+            var url = await minioService.UploadFileAsync("avatars", file.FileName, file);
+            user.ImgUrl = url.ObjectName;
+
+            await context.SaveChangesAsync();
+
+            var imgUrl = await minioService.GetFileUrlAsync(user.ImgUrl);
+
+            return new ResponseDTO<FileUrl>
+            {
+                Message = "Avatar téléversé",
+                Status = 200,
+                Data = new FileUrl { Url = imgUrl },
+            };
         }
     }
 }

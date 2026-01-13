@@ -4,12 +4,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SimplonHubApi.Models
 {
-    public class StatusBooking : BaseModel
+    public class StatusBooking : BaseModelOption
     {
-        public string Name { get; set; }
         public string DisplayName { get; set; }
-        public string Color { get; set; }
-        public string? Icon { get; set; }
     }
 
     public class StatusBookingDTO(StatusBooking status)

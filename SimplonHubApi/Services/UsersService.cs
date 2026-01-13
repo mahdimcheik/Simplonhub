@@ -1,14 +1,18 @@
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using SimplonHubApi.Contexts;
 using SimplonHubApi.Models;
 using SimplonHubApi.Utilities;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace SimplonHubApi.Services
 {
-    public class UsersService(MainContext context, UserManager<UserApp> userManager)
+    public class UsersService(
+        MainContext context,
+        UserManager<UserApp> userManager,
+        MinioService minioService
+    )
     {
         public async Task<ResponseDTO<List<UserResponseDTO>>> GetUsers(
             DynamicFilters<UserApp> tableState
@@ -34,28 +38,16 @@ namespace SimplonHubApi.Services
 
             if (tableState.Filters.TryGetValue("userRoles/roleId", out var roleIds))
             {
-                var ids = System.Text.Json.JsonSerializer.Deserialize<Guid[]>(
-                    roleIds.Value.ToString()
-                ).Select(x => x).ToList();
+                var ids = System
+                    .Text.Json.JsonSerializer.Deserialize<Guid[]>(roleIds.Value.ToString())
+                    .Select(x => x)
+                    .ToList();
                 query = query.Where(x => x.UserRoles.Any(y => ids.Contains(y.RoleId)));
             }
 
             // Apply filters, sorting, and pagination
             var countValues = await query.ApplyAndCountAsync(tableState);
 
-            // Now get role names from the included UserRoles and join with Roles table
-            //var userIds = countValues.Values.Select(u => u.Id).ToList();
-            //var userRolesDict = await context.UserRoles
-            //    .Where(ur => userIds.Contains(ur.UserId))
-            //    .Join(context.Roles,
-            //        ur => ur.RoleId,
-            //        r => r.Id,
-            //        (ur, r) => new { ur.UserId, RoleName = r.Name })
-            //    .GroupBy(x => x.UserId)
-            //    .ToDictionaryAsync(
-            //        g => g.Key,
-            //        g => g.Select(x => x.RoleName ?? string.Empty).ToList()
-            //    );
             var roles = await context.Roles.ToListAsync();
 
             return new ResponseDTO<List<UserResponseDTO>>
@@ -77,11 +69,12 @@ namespace SimplonHubApi.Services
         }
 
         public async Task<ResponseDTO<List<TeacherResponseDTO>>> GetTeachers(
-    DynamicFilters<UserApp> tableState, ClaimsPrincipal User
-)
+            DynamicFilters<UserApp> tableState,
+            ClaimsPrincipal User
+        )
         {
             var user = CheckUser.GetUserFromClaim(User, context);
-            
+
             var userRoles = await userManager.GetRolesAsync(user);
 
             var query = context
@@ -93,9 +86,11 @@ namespace SimplonHubApi.Services
                 .Include(x => x.ProgrammingLanguages)
                 .AsQueryable();
 
-            if(userRoles.Contains("Student"))
+            if (userRoles.Contains("Student"))
             {
-                query = query.Include(x => x.FanStudents.Where(f => f.StudentId == user.Id && f.ArchivedAt == null));
+                query = query.Include(x =>
+                    x.FanStudents.Where(f => f.StudentId == user.Id && f.ArchivedAt == null)
+                );
             }
 
             if (!string.IsNullOrEmpty(tableState.Search))
@@ -109,6 +104,58 @@ namespace SimplonHubApi.Services
             // Apply filters, sorting, and pagination
             var countValues = await query.ApplyAndCountAsync(tableState);
 
+            foreach (var item in countValues.Values)
+            {
+                if (item.ImgUrl is not null)
+                {
+                    item.ImgUrl = await minioService.GetFileUrlAsync(item.ImgUrl);
+                }
+            }
+
+            var roles = await context.Roles.ToListAsync();
+
+            return new ResponseDTO<List<TeacherResponseDTO>>
+            {
+                Status = 200,
+                Message = "Utilisateurs récupérés avec succès",
+                Data = countValues
+                    .Values.Select(x => new TeacherResponseDTO(
+                        x,
+                        roles
+                            .Where(r => x.UserRoles.Select(ur => ur.RoleId).Contains(r.Id))
+                            .Select(l => new RoleAppResponseDTO(l))
+                            .ToList()
+                    ))
+                    .ToList(),
+
+                Count = countValues.Count,
+            };
+        }
+
+        public async Task<ResponseDTO<List<TeacherResponseDTO>>> GetCandidats(
+            DynamicFilters<UserApp> tableState
+        )
+        {
+            var query = context
+                .Users.Include(x => x.Languages)
+                .Include(x => x.UserRoles)
+                .Where(x =>
+                    x.UserRoles.Any(ur => ur.RoleId == HardCode.ROLE_TEACHER)
+                    && x.StatusId == HardCode.STATUS_PENDING
+                )
+                .Include(x => x.Gender)
+                .AsQueryable();
+
+            // Apply filters, sorting, and pagination
+            var countValues = await query.ApplyAndCountAsync(tableState);
+
+            foreach (var item in countValues.Values)
+            {
+                if (item.ImgUrl is not null)
+                {
+                    item.ImgUrl = await minioService.GetFileUrlAsync(item.ImgUrl);
+                }
+            }
 
             var roles = await context.Roles.ToListAsync();
 

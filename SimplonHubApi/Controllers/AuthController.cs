@@ -1,13 +1,13 @@
-using SimplonHubApi.Contexts;
-using SimplonHubApi.Models;
-using SimplonHubApi.Services;
-using SimplonHubApi.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using SimplonHubApi.Contexts;
+using SimplonHubApi.Models;
+using SimplonHubApi.Services;
+using SimplonHubApi.Utilities;
 
 namespace SimplonHubApi.Controllers
 {
@@ -29,6 +29,7 @@ namespace SimplonHubApi.Controllers
         /// </summary>
         private readonly UserManager<UserApp> _userManager;
         private readonly AuthService authService;
+        //private readonly SeaweedStorageService storage;
 
         /// <summary>
         /// Constructeur du contrôleur des utilisateurs.
@@ -43,10 +44,12 @@ namespace SimplonHubApi.Controllers
             UserManager<UserApp> userManager,
             AuthService authService
         )
+            //SeaweedStorageService storage
         {
             this._context = context;
             this._userManager = userManager;
             this.authService = authService;
+            //this.storage = storage;
         }
 
         #endregion
@@ -286,7 +289,6 @@ namespace SimplonHubApi.Controllers
             return Ok(response);
         }
 
-
         #endregion
 
         #region POST AskForPasswordRecoveryMail
@@ -395,18 +397,41 @@ namespace SimplonHubApi.Controllers
         public async Task<ActionResult<ResponseDTO<object?>>> Logout()
         {
             // Récupération de l'email/nom d'utilisateur actuel pour nettoyer les connexions
-            var userEmail = HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ??
-                           HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ??
-                           HttpContext.User?.Identity?.Name;
+            var userEmail =
+                HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                ?? HttpContext.User?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                ?? HttpContext.User?.Identity?.Name;
 
             Response.Cookies.Delete("refreshToken");
 
-            return Ok(new ResponseDTO<object>
-            {
-                Message = "Vous êtes déconnecté",
-                Status = 200
-            });
+            return Ok(new ResponseDTO<object> { Message = "Vous êtes déconnecté", Status = 200 });
         }
+        #endregion
+
+        #region avatar
+        /// <summary>
+        /// Télécharge un avatar (image) pour l'utilisateur.
+        /// </summary>
+        /// <param name="file">Fichier de l'avatar.</param>
+        /// <returns>Résultat de l'opération.</returns>
+        [HttpPost("upload-avatar")]
+        [Consumes("multipart/form-data")]
+        [Produces("application/json")]
+        public async Task<ActionResult<ResponseDTO<FileUrl>?>> OnPostUploadAsync( IFormFile file)
+        {
+            var result = await authService.UploadAvatar(
+                file,
+                HttpContext.User,
+                HttpContext.Request
+            );
+
+            if (result.Status == 200 || result.Status == 201)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
         #endregion
     }
 }
